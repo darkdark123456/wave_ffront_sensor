@@ -1,0 +1,25 @@
+<UI version="4.0" >
+ <class>WaveFrontSensorClass</class>
+ <widget class="QWidget" name="WaveFrontSensorClass" >
+  <property name="objectName" >
+   <string notr="true">WaveFrontSensorClass</string>
+  </property>
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>WaveFrontSensor</string>
+  </property>$centralwidget$
+ </widget>
+ <layoutDefault spacing="6" margin="11" />
+ <pixmapfunction></pixmapfunction>
+ <resources>
+   <include location="WaveFrontSensor.qrc"/>
+ </resources>
+ <connections/>
+</UI>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <IncludePath>$(QT_PATH)\include;$(QT_PATH)\include\QtWidgets;$(QT_PATH)\include\Lib\Win64;$(IncludePath)</IncludePath>
+    <LibraryPath>$(QT_PATH)\include\Lib\Win64;$(QT_PATH)\include;$(QT_PATH)\include\QtWidgets;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Label="QtSettings">
+    <QtInstall>5.15.2_msvc2019_64</QtInstall>
+    <QMakeCodeLines>DEFINES += QT_MESSAGELOGCONTEXT</QMakeCodeLines>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <ItemGroup />
+</Project>
