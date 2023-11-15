@@ -16,7 +16,7 @@
 #include    "Configuration.h"
 #include    "CustomException.h"
 #include    "Algorithm.h"
-
+#include    "TimeConsuming.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -42,9 +42,14 @@ public:
         int min_order_u = 0, int max_order_u = 0,
         int min_order_v = 0, int max_order_v = 0,
         int edge_exclusion = 1);
-    QVector<float> readDataFromDisk(QString filename);
-    void  readWaveFrontSensorImageDat(QString filename, float nu_detector, float nv_detector, int upsampleing);
-    cv::Mat addNoNoise(cv::Mat& intensity_map);
+    void          readDataFromDisk(QString filename,QVector<float>& intensity);
+    QVector2D_    readWaveFrontSensorImageDat(QString filename, float nu_detector, float nv_detector, int upsampleing);
+    QVector2D_    addNoNoise(QVector2D_& intensity_map);
+    void          CAT_DATA_INFO(const QVector4D_&,const QVector3D_&);
+public:
+    void TestFunction();
+
+
 private:
     Ui::WaveFrontSensorClass *ui;
 private:

@@ -105,6 +105,7 @@
     <ClInclude Include="Algorithm.h" />
     <ClInclude Include="Configuration.h" />
     <ClInclude Include="CustomException.h" />
+    <ClInclude Include="TimeConsuming.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

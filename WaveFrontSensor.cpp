@@ -1,4 +1,4 @@
-#include "WaveFrontSensor.h"
+ï»¿#include "WaveFrontSensor.h"
 
 WaveFrontSensor::WaveFrontSensor(QWidget *parent)
     : QWidget(parent)
@@ -7,12 +7,11 @@ WaveFrontSensor::WaveFrontSensor(QWidget *parent)
     ui->setupUi(this);
     initDefaultDisplay();
 
-    dialog = new QDialog();
     connect(select_data_tool_button_.data(), &QToolButton::clicked, this, [&]()->void {
         filename_ = QFileDialog::getOpenFileName(this, " ", " ", "*.dat");
         if (filename_.isEmpty() || filename_.isNull()) {
 
-            QMessageBox::warning(this, "¾¯¸æ", u8"Ã»ÓĞ»ñµÃÑ¡ÔñµÄÊı¾İ£¬ÇëÖØĞÂÑ¡ÔñÊı¾İ");
+            QMessageBox::warning(this, "è­¦å‘Š", u8"æ²¡æœ‰è·å¾—é€‰æ‹©çš„æ•°æ®ï¼Œè¯·é‡æ–°é€‰æ‹©æ•°æ®");
             return;
 
         }
@@ -43,25 +42,27 @@ void WaveFrontSensor::initDefaultDisplay() {
 
     grid_layout_ = new QGridLayout(this);
     select_data_tool_button_ = QSharedPointer<QToolButton>(new QToolButton());
-    select_data_tool_button_->setText(u8"Ñ¡ÔñÊı¾İ");
+    select_data_tool_button_->setText(u8"é€‰æ‹©æ•°æ®");
     grid_layout_->addWidget(select_data_tool_button_.data(), 0, 0);
+
+
 
 }
 
 /**
  * .
- * \param configuration      ÅäÖÃÎÄ¼ş
- * \param hartmanngram       ´ı´¦ÀíµÄHartmanngram Í¼Ïñ
- * \param starting_pixel     ½â°ü
- * \param thresholding_model ¶şÖµ»¯Ä£Ê½ Ä¬ÈÏÊ¹ÓÃ×ÔÊÊÓ¦¶şÖµ»¯
- * \param img_int_thr        ÓÃÀ´¹ıÂËµôĞÅÔë±ÈµÍµÄÏñËØµã                Ä¬ÈÏ0
- * \param area_thr           Ãæ»ıãĞÖµ ¹ıÂËµôÃæ»ı½ÏĞ¡µÄÁ¬Í¨Óò           Ä¬ÈÏ1
- * \param ration_thr         Ç¿¶ÈÌå»ı±ÈãĞÖµ ÓÃÀ´¹ıÂË¿í¸ß±ÈĞ¡µÄÁ¬Í¨Óò   Ä¬ÈÏ0.05
- * \param min_order_u        Ë®Æ½·½ÏòÉÏÄâºÏ¶àÏîÊ½µÄ×îĞ¡½×Êı            Ä¬ÈÏ2
- * \param max_order_u        Ë®Æ½·½ÏòÉÏµÄÄâºÏ¶àÏîÊ½µÄ×î´ó½×Êı          Ä¬ÈÏ4
- * \param min_order_v        ´¹Ö±·½ÏòÉÏµÄÄâºÏ¶àÏîÊ½µÄ×îĞ¡½×Êı          Ä¬ÈÏ2
- * \param max_order_v        ´¹Ö±·½ÏòÉÏµÄÄâºÏ¶àÏîÊ½µÄ×î´ó½×Êı          Ä¬ÈÏ4
- * \param edge_exclusion     ÅÅ³ı¿¿½üÍ¼Ïñ±ßÔµµÄÁ¬Í¨ÓòµÄ±ßÔµ¿í¶È        Ä¬ÈÏ1
+ * \param configuration      é…ç½®æ–‡ä»¶
+ * \param hartmanngram       å¾…å¤„ç†çš„Hartmanngram å›¾åƒ
+ * \param starting_pixel     è§£åŒ…
+ * \param thresholding_model äºŒå€¼åŒ–æ¨¡å¼ é»˜è®¤ä½¿ç”¨è‡ªé€‚åº”äºŒå€¼åŒ–
+ * \param img_int_thr        ç”¨æ¥è¿‡æ»¤æ‰ä¿¡å™ªæ¯”ä½çš„åƒç´ ç‚¹                é»˜è®¤0
+ * \param area_thr           é¢ç§¯é˜ˆå€¼ è¿‡æ»¤æ‰é¢ç§¯è¾ƒå°çš„è¿é€šåŸŸ           é»˜è®¤1
+ * \param ration_thr         å¼ºåº¦ä½“ç§¯æ¯”é˜ˆå€¼ ç”¨æ¥è¿‡æ»¤å®½é«˜æ¯”å°çš„è¿é€šåŸŸ   é»˜è®¤0.05
+ * \param min_order_u        æ°´å¹³æ–¹å‘ä¸Šæ‹Ÿåˆå¤šé¡¹å¼çš„æœ€å°é˜¶æ•°            é»˜è®¤2
+ * \param max_order_u        æ°´å¹³æ–¹å‘ä¸Šçš„æ‹Ÿåˆå¤šé¡¹å¼çš„æœ€å¤§é˜¶æ•°          é»˜è®¤4
+ * \param min_order_v        å‚ç›´æ–¹å‘ä¸Šçš„æ‹Ÿåˆå¤šé¡¹å¼çš„æœ€å°é˜¶æ•°          é»˜è®¤2
+ * \param max_order_v        å‚ç›´æ–¹å‘ä¸Šçš„æ‹Ÿåˆå¤šé¡¹å¼çš„æœ€å¤§é˜¶æ•°          é»˜è®¤4
+ * \param edge_exclusion     æ’é™¤é è¿‘å›¾åƒè¾¹ç¼˜çš„è¿é€šåŸŸçš„è¾¹ç¼˜å®½åº¦        é»˜è®¤1
  */
 void WaveFrontSensor::processHartmanngram(Configuration& configuration, cv::Mat& hartmanngram, cv::Mat& starting_pixel,
     QString thresholding_model,
@@ -69,19 +70,21 @@ void WaveFrontSensor::processHartmanngram(Configuration& configuration, cv::Mat&
     int min_order_u, int max_order_u,
     int min_order_v, int max_order_v,
     int edge_exclusion) {
-    /** 1 »ñµÃÓÃ»§Ä¬ÈÏµÄ²ÎÊı*/
+    /** 1 è·å¾—ç”¨æˆ·é»˜è®¤çš„å‚æ•°*/
     double grid_period = configuration["grid_period"];
     double dist_mask_to_detector = configuration["dist_mask_to_detector"];
     double min_fingre_number = configuration["lowest_fringe_order"];
     double centroid_power = configuration["centroid_power"];
     double detector_pixel_size = configuration["detector_pixel_size"];
     double wavelength = configuration["wavelength"];
-    readWaveFrontSensorImageDat(filename_, configuration["nu_detector"], configuration["nv_detector"], configuration["upsampling"]);
+    QVector2D_ waveFrontImageData=readWaveFrontSensorImageDat(filename_, configuration["nu_detector"], configuration["nv_detector"], configuration["upsampling"]);
+    TestFunction();
+    //QVector2D_ hartmanngram = addNoNoise(waveFrontImageData);
 }
 
 
 /**
- * Ä¬ÈÏµÄÖµ
+ * é»˜è®¤çš„å€¼
  * \param filename   "data_exmaple_21//ex21_res_int_pr_se.dat"
  * \param nu_detector 512
  * \param nv_detector 512
@@ -90,9 +93,8 @@ void WaveFrontSensor::processHartmanngram(Configuration& configuration, cv::Mat&
  */
 
 
-QVector<float> WaveFrontSensor::readDataFromDisk(QString filename) {
+void WaveFrontSensor::readDataFromDisk(QString filename, QVector<float>& intensity) {
 
-    QVector<float> intensity;
     QFile file(filename);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 
@@ -115,20 +117,121 @@ QVector<float> WaveFrontSensor::readDataFromDisk(QString filename) {
 
         throw FileOpenException();
     }
+}
 
-    return intensity;
+void WaveFrontSensor::TestFunction() {
+
+    int dim[4] = { 4,2,4,2 };
+    QVector2D_ array_2d(8, QVector<float>(8, 0));
+    QVector2D_ array_2d_(4, QVector<float>(4, 0));
+
+    QVector4D_ array_4d(dim[0], QVector<QVector<QVector<float>>>(dim[1], QVector<QVector<float>>(dim[2], QVector<float>(dim[3], 0))));
+    QVector3D_ array_3d(dim[0],QVector<QVector<float>>(dim[1],QVector<float>(dim[2],0)));
+    int index = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            array_2d[i][j] = index++;
+        }
+
+    }
+
+    try{
+
+        HIOlAB_CXX_14::convertArray2D_TO_Array_4D(array_2d, 4, 2, 4, 2, array_4d);
+    }
+    catch (const std::exception& dimConvertException){
+
+        HIOlAB_CXX_14::ExceptionInfoPrint(dimConvertException.what());
+
+    }
+
+
+    HIOlAB_CXX_14::Mean_Axis_3(array_4d, dim, array_3d);
+    CAT_DATA_INFO(array_4d, array_3d);
+
+    HIOlAB_CXX_14::Mean_Axis_1(array_3d, dim[0],dim[1],dim[2],array_2d_);
+
+  
+    try {
+        
+        auto min_value = HIOlAB_CXX_14::minValue(array_2d);
+        auto max_value = HIOlAB_CXX_14::maxValue(array_2d);
+
+        qDebug() << "æµ‹è¯•å‡½æ•°ä¸­çš„æœ€å°å€¼ " << min_value << "\n";
+        qDebug() << "æµ‹è¯•å‡½æ•°ä¸­çš„æœ€å¤§å€¼ " << max_value << "\n";
+
+    }
+    catch (const std::exception& vectorNullException){
+
+
+    }
+    
+
+
 }
 
 
 
-void WaveFrontSensor::readWaveFrontSensorImageDat(QString filename, float nu_detector, float nv_detector, int upsampleing) {
+void WaveFrontSensor::CAT_DATA_INFO(const QVector4D_& array_4d , const QVector3D_& array_3d) {
 
+    dialog = new QDialog();
+    dialog->setWindowTitle(u8"åŠ è½½ä¿¡æ¯çª—å£");
+    dialog->setFixedSize(400, 500);
+    infoText = new QPlainTextEdit(dialog);
+    infoText->setReadOnly(true);
+    infoText->setFixedSize(dialog->size());
+    infoText->appendPlainText(u8"åŠ è½½çš„æ•°æ®å¦‚ä¸‹ ");
+    infoText->appendPlainText(QString::number(array_4d.size()));
+    infoText->appendPlainText(QString::number(array_4d[0].size()));
+    infoText->appendPlainText(QString::number(array_4d[0][0].size()));
+    infoText->appendPlainText(QString::number(array_4d[0][0][0].size()));
+    infoText->appendPlainText(u8"æœ€åä¸¤ä¸ªå…ƒç´  ");
+    infoText->appendPlainText(QString::number(array_4d[511][1][511][0]));
+    infoText->appendPlainText(QString::number(array_4d[511][1][511][1]));
+
+    infoText->appendPlainText(u8"æ²¿ç€åæ ‡è½´3çš„å‡å€¼çŸ©é˜µshapeä¸º ");
+    infoText->appendPlainText(QString::number(array_3d.size()));
+    infoText->appendPlainText(QString::number(array_3d[0].size()));
+    infoText->appendPlainText(QString::number(array_3d[0][0].size()));
+    infoText->appendPlainText(u8"æ²¿ç€åæ ‡è½´3çš„å‡å€¼çŸ©é˜µå‰çš„ä¸¤ä¸ªå€¼  ");
+
+    infoText->appendPlainText(QString::number(array_3d[0][0][0]));
+    infoText->appendPlainText(QString::number(array_3d[0][0][1]));
+    infoText->appendPlainText(u8"æ²¿ç€åæ ‡è½´3çš„å‡å€¼çŸ©é˜µæœ€åçš„ä¸¤ä¸ªå€¼  ");
+
+    infoText->appendPlainText(QString::number(array_3d[511][1][510]));
+    infoText->appendPlainText(QString::number(array_3d[511][1][511]));
+    dialog->show();
+}
+
+
+
+/**
+ * .
+ * \param filename      é‡‡é›†åˆ°çš„æ•°æ®
+ * \param nu_detector   æ°´å¹³æ–¹å‘çš„æ£€æµ‹
+ * \param nv_detector   ç«–ç›´æ–¹å‘ä¸Šçš„æ£€æµ‹
+ * \param upsampleing   é‡‡æ ·å¤§å°
+ * å­˜åœ¨é—®é¢˜ å¦‚æœæ•°æ®ç±»å‹ç»´å•ç²¾åº¦float æˆ‘åªæƒ³å¼€è¾Ÿä¸€å—4ç»´ç©ºé—´(512,2,512,2)8MB ä¸€å—3ç»´ç©ºé—´(512,2,512)4MB ä¸€å—2ç»´ç©ºé—´(1024,1024)8MB 1å—ä¸€ç»´ç©ºé—´1024*1024  8MBï¼Œtotal=28MB ä½†æ˜¯å•çº¿ç¨‹è¯»å–ç£ç›˜æ˜¯å¦å¤ªæ…¢äº†ï¼Ÿï¼Ÿï¼Ÿ ç»è¿‡å®éªŒå¤§çº¦éœ€è¦3s
+ */
+QVector<QVector<float>> WaveFrontSensor::readWaveFrontSensorImageDat(QString filename, float nu_detector, float nv_detector, int upsampleing) {
+    
     QVector<float> intensity;
     QSize size(static_cast<int>(upsampleing * nv_detector), static_cast<int>(upsampleing * nu_detector));
 
     try {
-        std::future<QVector<float>> fut = std::async(std::launch::async, &WaveFrontSensor::readDataFromDisk, this, filename);
-        intensity = fut.get();
+
+        
+        TimeConsuming timer;
+        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+        timer.setStartTime(start);
+        readDataFromDisk(filename, intensity);
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        timer.setEndTime(end);
+        std::chrono::duration<double> duration=timer.calculateDuration();
+        qDebug() <<duration.count()/(1000000)<<" s";
     }
     catch (const std::exception& fileOpenException) {
 
@@ -144,7 +247,6 @@ void WaveFrontSensor::readWaveFrontSensorImageDat(QString filename, float nu_det
         Intensity2D[i].resize(size.width());
     }
 
-                                                                                                                                                                                                                                                                                               
     HIOlAB_CXX_14::reshape(intensity, Intensity2D, size.height(), size.width());
     HIOlAB_CXX_14::flipud(Intensity2D);
 
@@ -162,46 +264,36 @@ void WaveFrontSensor::readWaveFrontSensorImageDat(QString filename, float nu_det
         HIOlAB_CXX_14::ExceptionInfoPrint(dimConvertException.what());
     }
 
-
-    QVector3D_  Array3D(dim[0],QVector<QVector<float>>(dim[1],QVector<float>(dim[2],0)));
-   
-   
+    QVector3D_  Array3D(dim[0],QVector<QVector<float>>(dim[1],QVector<float>(dim[2],0)));   
     HIOlAB_CXX_14::Mean_Axis_3(Array4D, dim, Array3D);
+    QVector2D_ waveFrontImage(dim[0], QVector<float>(dim[2], 0));
+    HIOlAB_CXX_14::Mean_Axis_1(Array3D,dim[0],dim[1],dim[2], waveFrontImage);
+    CAT_DATA_INFO(Array4D, Array3D);
 
-    dialog->setWindowTitle(u8"¼ÓÔØĞÅÏ¢´°¿Ú");
-    dialog->setFixedSize(400, 500);
-    infoText = new QPlainTextEdit(dialog);
-    infoText->setReadOnly(true);
-    infoText->setFixedSize(dialog->size());
-    infoText->appendPlainText(u8"¼ÓÔØµÄÊı¾İÈçÏÂ ");
-    infoText->appendPlainText(QString::number(Array4D.size()));
-    infoText->appendPlainText(QString::number(Array4D[0].size()));
-    infoText->appendPlainText(QString::number(Array4D[0][0].size()));
-    infoText->appendPlainText(QString::number(Array4D[0][0][0].size()));
-    infoText->appendPlainText(u8"×îºóÁ½¸öÔªËØ ");
-    infoText->appendPlainText(QString::number(Array4D[511][1][511][0]));
-    infoText->appendPlainText(QString::number(Array4D[511][1][511][1]));
+    infoText->appendPlainText(QString(u8"äºŒç»´å‡å€¼çŸ©é˜µçš„æœ€å‰é¢ä¸¤ä¸ªå…ƒç´  ") + QString::number(waveFrontImage[0][0]) + QString::number(waveFrontImage[0][1]));
+    infoText->appendPlainText(QString(u8"äºŒç»´å‡å€¼çŸ©é˜µçš„æœ€åé¢ä¸¤ä¸ªå…ƒç´  ") + QString::number(waveFrontImage[511][510]) + QString::number(waveFrontImage[511][511]));
+
+    return waveFrontImage;
+}
+
+
+
+
+QVector<QVector<float>> WaveFrontSensor::addNoNoise(QVector2D_& intensity_map) {
     
-    infoText->appendPlainText(u8"ÑØ×Å×ø±êÖá3µÄ¾ùÖµ¾ØÕóshapeÎª ");
-    infoText->appendPlainText(QString::number(Array3D.size()));
-    infoText->appendPlainText(QString::number(Array3D[0].size()));
-    infoText->appendPlainText(QString::number(Array3D[0][0].size()));
-    infoText->appendPlainText(u8"ÑØ×Å×ø±êÖá3µÄ¾ùÖµ¾ØÕó×îºóµÄÁ½¸öÖµ  ");
-
-    infoText->appendPlainText(QString::number(Array3D[511][1][510]));
-    infoText->appendPlainText(QString::number(Array3D[511][1][511]));
+    char pixel_depth = 14;
+    //double minItensity = *(std::min_element(intensity_map.constBegin(), intensity_map.constEnd()));
+    //double 
 
 
-    dialog->show();
-
+    //
+    //return  intensity_map;
 }
 
 
 
-cv::Mat WaveFrontSensor::addNoNoise(cv::Mat& intensity_map) {
 
-    return cv::Mat::zeros(cv::Size(1, 1), CV_8UC1);
-}
+
 
 void WaveFrontSensor::free() {
 

@@ -28,7 +28,6 @@ namespace HIOlAB_CXX_14 {
     }
 
 
-
     template<typename T>
     static void swap(QVector<T>& Vector_1, QVector<T>& Vector_2) {
         int low = 0;
@@ -40,7 +39,6 @@ namespace HIOlAB_CXX_14 {
     }
 
 
-
     template<typename T>
     static void flipud(QVector<QVector<T>>& source_array) {
         int low = 0;
@@ -50,7 +48,6 @@ namespace HIOlAB_CXX_14 {
             HIOlAB_CXX_14::swap(source_array[low++], source_array[high--]);
         }
     }
-
 
 
     template<typename T, typename Dim = int>
@@ -79,9 +76,8 @@ namespace HIOlAB_CXX_14 {
 
     }
 
-
     template<typename T>
-    void  Mean_Axis_3(const QVector<QVector<QVector<QVector<T>>>>& Array4D,int* dim,QVector<QVector<QVector<T>>>& Mean_Array3D) {
+    static void  Mean_Axis_3(const QVector<QVector<QVector<QVector<T>>>>& Array4D,int* dim,QVector<QVector<QVector<T>>>& Mean_Array3D) {
         for (auto d1 = 0; d1 < dim[0]; d1++) {
             for (auto d2 = 0; d2 < dim[1]; d2++) {
                 for (auto d3 = 0; d3 < dim[2]; d3++) {
@@ -99,4 +95,61 @@ namespace HIOlAB_CXX_14 {
     }
 
 
+    template<typename T>
+    static void Mean_Axis_1(const QVector<QVector<QVector<T>>>& Array3D,const int& dim1,const int& dim2,const int& dim3, QVector<QVector<T>>& Mean_Array2D) {
+        double sum = 0;
+        for (auto i = 0; i < dim1; i++) {
+            for (auto j= 0; j < dim3; j++) {
+                sum = 0.;
+                for (auto k = 0; k < dim2; k++) {
+
+                        sum += Array3D[i][k][j];       
+                }
+                Mean_Array2D[i][j] = sum / dim2;
+            }
+        }
+    }
+
+
+    template<typename T>
+    static auto minValue(const QVector<QVector<T>>& Array2D) -> decltype(Array2D[0][0]){
+        if (Array2D.isEmpty()) {
+
+            throw VectorNullException();
+        }
+        auto min_value = FLT_MAX;
+        auto row_count = Array2D.size();
+        for (auto i = 0; i < row_count; i++){
+            auto iterator = std::min_element(Array2D[i].constBegin(), Array2D[i].constEnd());
+            if (*iterator < min_value ) {
+                
+                min_value = *iterator;
+            }
+
+        }
+        return min_value;
+    }
+
+
+    template<typename T>
+    static auto maxValue(const QVector<QVector<T>>& Array2D) -> decltype(Array2D[0][0]) {
+        if (Array2D.isEmpty()) {
+
+            throw VectorNullException();
+        }
+        auto max_value = FLT_MIN;
+        auto row_count = Array2D.size();
+        for (auto i = 0; i < row_count; i++){
+
+            auto iterator = std::max_element(Array2D[i].constBegin(), Array2D[i].constEnd());
+            if (*iterator > max_value) {
+
+                max_value = *iterator;
+            }
+            
+        }
+        return max_value;
+    } 
+
+    
 };

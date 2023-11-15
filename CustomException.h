@@ -70,9 +70,18 @@ struct DimConvertException : public std::exception {
 	DimConvertException(const char* const _Message) : std::exception(_Message, 1) {
 
 	}
-
-
-
-
 };
 
+struct VectorNullException : public std::exception {
+	VectorNullException() :std::exception("Vector NUll Exception", 1) {
+
+
+	}
+
+	VectorNullException(const char* const _Message) :std::exception(_Message,1) {
+
+
+
+	}
+
+};
