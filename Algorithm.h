@@ -2,6 +2,9 @@
 #include <qvector.h>
 #include <algorithm>
 #include <qdebug.h>
+#include <QtConcurrent/QtConcurrent>
+
+
 
 namespace HIOlAB_CXX_14 {
 
@@ -112,7 +115,8 @@ namespace HIOlAB_CXX_14 {
 
 
     template<typename T>
-    static auto minValue(const QVector<QVector<T>>& Array2D) -> decltype(Array2D[0][0]){
+    static auto minValue(const QVector<QVector<T>>& Array2D) -> typename std::remove_reference<decltype(Array2D[0][0])>::type{
+ 
         if (Array2D.isEmpty()) {
 
             throw VectorNullException();
@@ -132,7 +136,7 @@ namespace HIOlAB_CXX_14 {
 
 
     template<typename T>
-    static auto maxValue(const QVector<QVector<T>>& Array2D) -> decltype(Array2D[0][0]) {
+    static auto maxValue(const QVector<QVector<T>>& Array2D) -> typename std::remove_reference<decltype(Array2D[0][0])>::type {
         if (Array2D.isEmpty()) {
 
             throw VectorNullException();
@@ -146,10 +150,206 @@ namespace HIOlAB_CXX_14 {
 
                 max_value = *iterator;
             }
-            
         }
         return max_value;
     } 
+
+
+    template<typename T>
+    static auto ptp(const QVector<QVector<T>>& Array2D){
+
+        T ptp = HIOlAB_CXX_14::maxValue(Array2D) - HIOlAB_CXX_14::minValue(Array2D);
+        return ptp;
+    }
+
+
+    template <typename T,typename U>
+    static void operator-(QVector<QVector<T>>& Array2D, U value) {
+        auto rows    = Array2D.size();
+        auto columns = Array2D[0].size();
+        int  os_remain_thread_num = QThread::idealThreadCount()-2;
+        int  actual_thread_num     = os_remain_thread_num <= 0 ? 1 : 4;
+        int  block_num = rows / actual_thread_num;
+        int  start_row = 0;
+        int  end_row = 0;
+
+        if (block_num==0){
+
+            actual_thread_num = 1;
+        }
+
+        QVector<QFuture<void>> futures;
+        for (int i = 0; i < actual_thread_num-1; i++){
+            start_row = i * block_num;
+            end_row =   (i + 1) * block_num;
+            QFuture<void> future = QtConcurrent::run([&Array2D, start_row, end_row, columns, value]() {
+                for (int i = start_row; i < end_row; i++) {
+                    for (int j = 0; j < columns; j++) {
+                        try{
+
+                            Array2D[i][j] -= value;
+                        }
+                        catch (const std::exception& outOfRangeException){
+
+                            HIOlAB_CXX_14::ExceptionInfoPrint(outOfRangeException.what());
+                        }
+                    }
+                }
+                });
+            futures.append(future);
+        }
+
+        for(QFuture<void>& future : futures){
+
+            future.waitForFinished();
+        }
+
+        for (int i = end_row; i < rows; i++) {
+            for (int j = 0; j < columns; j++){
+                try {
+
+                    Array2D[i][j] -= value;
+                }
+                catch (const std::exception& outOfRangeException) {
+
+                    HIOlAB_CXX_14::ExceptionInfoPrint(outOfRangeException.what());
+                }
+            }
+        }
+    }
+
+
+    template<typename T,typename U>
+    static void operator/(QVector<QVector<T>>& Array2D,U numerator) {
+        if (numerator == 0) {
+
+            throw  DenominatorZeroException();
+        }
+
+        auto rows = Array2D.size();
+        auto columns = Array2D[0].size();
+        int  os_remain_thread_num = QThread::idealThreadCount() - 2;
+        int  actual_thread_num = os_remain_thread_num <= 0 ? 1 : 4;
+        int  block_num = rows / actual_thread_num;
+        int  start_row = 0;
+        int  end_row = 0;
+
+        if (block_num == 0) {
+
+            actual_thread_num = 1;
+        }
+
+        QVector<QFuture<void>> futures;
+        for (int i = 0; i < actual_thread_num - 1; i++) {
+            start_row = i * block_num;
+            end_row = (i + 1) * block_num;
+            QFuture<void> future = QtConcurrent::run([&Array2D, start_row, end_row, columns, numerator]() {
+                for (int i = start_row; i < end_row; i++) {
+                    for (int j = 0; j < columns; j++) {
+                        try {
+
+                            Array2D[i][j] /= numerator;
+                        }
+                        catch (const std::exception& outOfRangeException) {
+
+                            HIOlAB_CXX_14::ExceptionInfoPrint(outOfRangeException.what());
+                        }
+                    }
+                }
+                });
+            futures.append(future);
+        }
+
+        for (QFuture<void>& future : futures) {
+
+            future.waitForFinished();
+        }
+
+        for (int i = end_row; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                try {
+
+                    Array2D[i][j] /= numerator;
+                }
+                catch (const std::exception& outOfRangeException) {
+
+                    HIOlAB_CXX_14::ExceptionInfoPrint(outOfRangeException.what());
+                }
+            }
+        }
+    }
+
+
+    template<typename T,typename U>
+    static void operator*(QVector<QVector<T>>& Array2D,U value) {
+        auto rows = Array2D.size();
+        auto columns = Array2D[0].size();
+        int  os_remain_thread_num = QThread::idealThreadCount() - 2;
+        int  actual_thread_num = os_remain_thread_num <= 0 ? 1 : 4;
+        int  block_num = rows / actual_thread_num;
+        int  start_row = 0;
+        int  end_row = 0;
+
+        if (block_num == 0) {
+
+            actual_thread_num = 1;
+        }
+
+        QVector<QFuture<void>> futures;
+        for (int i = 0; i < actual_thread_num - 1; i++) {
+            start_row = i * block_num;
+            end_row = (i + 1) * block_num;
+            QFuture<void> future = QtConcurrent::run([&Array2D, start_row, end_row, columns, value]() {
+                for (int i = start_row; i < end_row; i++) {
+                    for (int j = 0; j < columns; j++) {
+                        try {
+
+                            Array2D[i][j] *= value;
+                        }
+                        catch (const std::exception& outOfRangeException) {
+
+                            HIOlAB_CXX_14::ExceptionInfoPrint(outOfRangeException.what());
+                        }
+                    }
+                }
+                });
+            futures.append(future);
+        }
+
+        for (QFuture<void>& future : futures) {
+
+            future.waitForFinished();
+        }
+
+        for (int i = end_row; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                try {
+
+                    Array2D[i][j] *= value;
+                }
+                catch (const std::exception& outOfRangeException) {
+
+                    HIOlAB_CXX_14::ExceptionInfoPrint(outOfRangeException.what());
+                }
+            }
+        }
+
+
+
+    }
+
+
+    //template<typename T>
+    //static void floor(QVector<QVector<T>>& Array2D) {
+    //    QtConcurrent::blockingMap(Array2D.begin(), Array2D.end(), [=](QVector<T>& Array1D) -> void {
+    //        std::transform(Array1D.begin(), Array1D.end(), Array1D.begin(), [=](T value) {
+
+    //            return std::floor(value);
+    //            })
+    //        })
+    //}
+
+
 
     
 };

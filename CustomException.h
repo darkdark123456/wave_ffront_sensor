@@ -85,3 +85,15 @@ struct VectorNullException : public std::exception {
 	}
 
 };
+
+struct DenominatorZeroException : std::exception {
+
+	DenominatorZeroException() : std::exception("Denominator Zero Exception ",1) {
+
+	}
+
+	DenominatorZeroException(const char* const _Message) :std::exception(_Message, 1) {
+
+	}
+};
+

@@ -44,12 +44,10 @@ public:
         int edge_exclusion = 1);
     void          readDataFromDisk(QString filename,QVector<float>& intensity);
     QVector2D_    readWaveFrontSensorImageDat(QString filename, float nu_detector, float nv_detector, int upsampleing);
-    QVector2D_    addNoNoise(QVector2D_& intensity_map);
+    QVector2D_    addNoNoise(QVector2D_&);
     void          CAT_DATA_INFO(const QVector4D_&,const QVector3D_&);
 public:
     void TestFunction();
-
-
 private:
     Ui::WaveFrontSensorClass *ui;
 private:

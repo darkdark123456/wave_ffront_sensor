@@ -78,8 +78,8 @@ void WaveFrontSensor::processHartmanngram(Configuration& configuration, cv::Mat&
     double detector_pixel_size = configuration["detector_pixel_size"];
     double wavelength = configuration["wavelength"];
     QVector2D_ waveFrontImageData=readWaveFrontSensorImageDat(filename_, configuration["nu_detector"], configuration["nv_detector"], configuration["upsampling"]);
-    TestFunction();
-    //QVector2D_ hartmanngram = addNoNoise(waveFrontImageData);
+    //TestFunction();
+    QVector2D_ h= addNoNoise(waveFrontImageData);
 }
 
 
@@ -117,59 +117,6 @@ void WaveFrontSensor::readDataFromDisk(QString filename, QVector<float>& intensi
 
         throw FileOpenException();
     }
-}
-
-void WaveFrontSensor::TestFunction() {
-
-    int dim[4] = { 4,2,4,2 };
-    QVector2D_ array_2d(8, QVector<float>(8, 0));
-    QVector2D_ array_2d_(4, QVector<float>(4, 0));
-
-    QVector4D_ array_4d(dim[0], QVector<QVector<QVector<float>>>(dim[1], QVector<QVector<float>>(dim[2], QVector<float>(dim[3], 0))));
-    QVector3D_ array_3d(dim[0],QVector<QVector<float>>(dim[1],QVector<float>(dim[2],0)));
-    int index = 0;
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            array_2d[i][j] = index++;
-        }
-
-    }
-
-    try{
-
-        HIOlAB_CXX_14::convertArray2D_TO_Array_4D(array_2d, 4, 2, 4, 2, array_4d);
-    }
-    catch (const std::exception& dimConvertException){
-
-        HIOlAB_CXX_14::ExceptionInfoPrint(dimConvertException.what());
-
-    }
-
-
-    HIOlAB_CXX_14::Mean_Axis_3(array_4d, dim, array_3d);
-    CAT_DATA_INFO(array_4d, array_3d);
-
-    HIOlAB_CXX_14::Mean_Axis_1(array_3d, dim[0],dim[1],dim[2],array_2d_);
-
-  
-    try {
-        
-        auto min_value = HIOlAB_CXX_14::minValue(array_2d);
-        auto max_value = HIOlAB_CXX_14::maxValue(array_2d);
-
-        qDebug() << "测试函数中的最小值 " << min_value << "\n";
-        qDebug() << "测试函数中的最大值 " << max_value << "\n";
-
-    }
-    catch (const std::exception& vectorNullException){
-
-
-    }
-    
-
-
 }
 
 
@@ -223,7 +170,6 @@ QVector<QVector<float>> WaveFrontSensor::readWaveFrontSensorImageDat(QString fil
 
     try {
 
-        
         TimeConsuming timer;
         std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
         timer.setStartTime(start);
@@ -231,7 +177,7 @@ QVector<QVector<float>> WaveFrontSensor::readWaveFrontSensorImageDat(QString fil
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         timer.setEndTime(end);
         std::chrono::duration<double> duration=timer.calculateDuration();
-        qDebug() <<duration.count()/(1000000)<<" s";
+        qDebug() <<u8"从磁盘读取文件耗时 " << duration.count() / (1000000) << " s";
     }
     catch (const std::exception& fileOpenException) {
 
@@ -280,17 +226,105 @@ QVector<QVector<float>> WaveFrontSensor::readWaveFrontSensorImageDat(QString fil
 
 
 QVector<QVector<float>> WaveFrontSensor::addNoNoise(QVector2D_& intensity_map) {
-    
     char pixel_depth = 14;
-    //double minItensity = *(std::min_element(intensity_map.constBegin(), intensity_map.constEnd()));
-    //double 
-
-
-    //
-    //return  intensity_map;
+    auto min_value = HIOlAB_CXX_14::minValue(intensity_map);
+    auto max_vaue  = HIOlAB_CXX_14::maxValue(intensity_map);
+    HIOlAB_CXX_14::operator-(intensity_map, min_value); /**使用了多线程分块进行计算512*512 大约耗时0.0098s*/
+    //HIOlAB_CXX_14::operator*(intensity_map, std::pow(2, pixel_depth) - 1);
+    //HIOlAB_CXX_14::floor(intensity_map);
+    TimeConsuming timer;
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    HIOlAB_CXX_14::operator/(intensity_map, max_vaue - min_value);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::duration<double>>(end-start);
+    std::cout <<"分块矩阵的除法耗时 " << duration.count() << "\n";
+    return  intensity_map;
 }
 
 
+void WaveFrontSensor::TestFunction() {
+
+    //int dim[4] = { 4,2,4,2 };
+    //QVector2D_ array_2d(8, QVector<float>(8, 0));
+    //QVector2D_ array_2d_(4, QVector<float>(4, 0));
+
+    //QVector4D_ array_4d(dim[0], QVector<QVector<QVector<float>>>(dim[1], QVector<QVector<float>>(dim[2], QVector<float>(dim[3], 0))));
+    //QVector3D_ array_3d(dim[0],QVector<QVector<float>>(dim[1],QVector<float>(dim[2],0)));
+    //int index = 0;
+    //for (int i = 0; i < 8; i++)
+    //{
+    //    for (int j = 0; j < 8; j++)
+    //    {
+    //        array_2d[i][j] = index++;
+    //    }
+
+    //}
+
+    //try{
+
+    //    HIOlAB_CXX_14::convertArray2D_TO_Array_4D(array_2d, 4, 2, 4, 2, array_4d);
+    //}
+    //catch (const std::exception& dimConvertException){
+
+    //    HIOlAB_CXX_14::ExceptionInfoPrint(dimConvertException.what());
+
+    //}
+
+
+    //HIOlAB_CXX_14::Mean_Axis_3(array_4d, dim, array_3d);
+    //CAT_DATA_INFO(array_4d, array_3d);
+
+    //HIOlAB_CXX_14::Mean_Axis_1(array_3d, dim[0],dim[1],dim[2],array_2d_);
+
+
+    //try {
+    //    
+    //    auto min_value = HIOlAB_CXX_14::minValue(array_2d);
+    //    auto max_value = HIOlAB_CXX_14::maxValue(array_2d);
+
+    //    qDebug() << "测试函数中的最小值 " << min_value << "\n";
+    //    qDebug() << "测试函数中的最大值 " << max_value << "\n";
+
+    //}
+    //catch (const std::exception& vectorNullException){
+
+
+    //}
+
+    //测试addNoNorise函数
+    qDebug() << "测试addNoNorise函数\n";
+    QVector<float> array{ 2,1,2,1,2,4,3,2,3 };
+    int index = 0;
+    QVector2D_ matrix(3, QVector<float>(3, 0));
+    for (auto i = 0; i < 3; i++)
+    {
+        for (auto j = 0; j < 3; j++) {
+
+            matrix[i][j] = array[index++];
+        }
+
+    }
+    auto min_value = HIOlAB_CXX_14::minValue(matrix);
+    qDebug() << " min " << min_value << "\n";
+    auto max_v = HIOlAB_CXX_14::maxValue(matrix);
+    qDebug() << "max " << max_v << "\n";
+    auto ptp = HIOlAB_CXX_14::ptp(matrix);
+    qDebug() << " ptp " << ptp << "\n";
+
+    HIOlAB_CXX_14::operator-(matrix, min_value);
+
+    qDebug() << u8"将一个矩阵减去最小值后的 矩阵的值 \n";
+    for (auto i = 0; i < 3; i++)
+    {
+        for (auto j = 0; j < 3; j++) {
+
+            std::cout << matrix[i][j] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+
+}
 
 
 
