@@ -78,8 +78,8 @@ void WaveFrontSensor::processHartmanngram(Configuration& configuration, cv::Mat&
     double detector_pixel_size = configuration["detector_pixel_size"];
     double wavelength = configuration["wavelength"];
     QVector2D_ waveFrontImageData=readWaveFrontSensorImageDat(filename_, configuration["nu_detector"], configuration["nv_detector"], configuration["upsampling"]);
-    //TestFunction();
-    QVector2D_ h= addNoNoise(waveFrontImageData);
+    TestFunction();
+    addNoNoise(waveFrontImageData);
 }
 
 
@@ -225,21 +225,29 @@ QVector<QVector<float>> WaveFrontSensor::readWaveFrontSensorImageDat(QString fil
 
 
 
-QVector<QVector<float>> WaveFrontSensor::addNoNoise(QVector2D_& intensity_map) {
+QVector<QVector<quint16>> WaveFrontSensor::addNoNoise(QVector2D_& intensity_map) {
+    QVector<QVector<quint16>> detector_image;
     char pixel_depth = 14;
-    auto min_value = HIOlAB_CXX_14::minValue(intensity_map);
-    auto max_vaue  = HIOlAB_CXX_14::maxValue(intensity_map);
-    HIOlAB_CXX_14::operator-(intensity_map, min_value); /**使用了多线程分块进行计算512*512 大约耗时0.0098s*/
-    //HIOlAB_CXX_14::operator*(intensity_map, std::pow(2, pixel_depth) - 1);
-    //HIOlAB_CXX_14::floor(intensity_map);
+
     TimeConsuming timer;
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-    HIOlAB_CXX_14::operator/(intensity_map, max_vaue - min_value);
+
+    auto min_value = HIOlAB_CXX_14::minValue(intensity_map);
+    auto max_vaue  = HIOlAB_CXX_14::maxValue(intensity_map);
+    HIOlAB_CXX_14::operator-(intensity_map, min_value); /**0.0098s*/
+    HIOlAB_CXX_14::operator/(intensity_map, max_vaue - min_value);/**0.0072*/
+    HIOlAB_CXX_14::operator*(intensity_map, std::pow(2, pixel_depth) - 1);
+    HIOlAB_CXX_14::floor(intensity_map);
+    HIOlAB_CXX_14::thresholdProcessing(intensity_map, std::pow(2, pixel_depth) - 1);
+    HIOlAB_CXX_14::astype(intensity_map, detector_image);
+
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::duration<double>>(end-start);
-    std::cout <<"分块矩阵的除法耗时 " << duration.count() << "\n";
-    return  intensity_map;
+    intensity_map.clear();
+    return  detector_image;
 }
+
+
 
 
 void WaveFrontSensor::TestFunction() {
@@ -323,6 +331,74 @@ void WaveFrontSensor::TestFunction() {
 
         std::cout << std::endl;
     }
+
+    HIOlAB_CXX_14::operator/(matrix, max_v - min_value);
+    qDebug() << u8"将一个矩阵除以峰值后矩阵的值 \n";
+    for (auto i = 0; i < 3; i++)
+    {
+        for (auto j = 0; j < 3; j++) {
+
+            std::cout << matrix[i][j] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+
+    HIOlAB_CXX_14::operator*(matrix, pow(2,2));
+    qDebug() << u8"将一个矩阵乘以后矩阵的值 \n";
+    for (auto i = 0; i < 3; i++)
+    {
+        for (auto j = 0; j < 3; j++) {
+
+            std::cout << matrix[i][j] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+
+
+    HIOlAB_CXX_14::floor(matrix);
+    qDebug() << u8"将一个矩阵取整数后矩阵的值 \n";
+    for (auto i = 0; i < 3; i++)
+    {
+        for (auto j = 0; j < 3; j++) {
+
+            std::cout << matrix[i][j] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+
+    HIOlAB_CXX_14::thresholdProcessing(matrix, 2);
+    qDebug() << u8"阈值处理后矩阵的值 \n";
+    for (auto i = 0; i < 3; i++)
+    {
+        for (auto j = 0; j < 3; j++) {
+
+            std::cout << matrix[i][j] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+    qDebug() << "每个元素占用的字节 " << sizeof(matrix[0][0]) << "\n";
+
+    QVector<QVector<quint16>> vector2D;
+    HIOlAB_CXX_14::astype(matrix, vector2D);
+    qDebug() << u8"类型转换后矩阵的值 \n";
+    for (auto i = 0; i < 3; i++)
+    {
+        for (auto j = 0; j < 3; j++) {
+
+            std::cout << matrix[i][j] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+    qDebug() << u8"类型转换后每个元素的类型\n";
+
+    qDebug() << typeid(decltype(vector2D[0][0])).name() << "\n";
+    qDebug() << "每个元素占用的字节 " << sizeof(vector2D[0][0]) << "\n";
+
 
 }
 
