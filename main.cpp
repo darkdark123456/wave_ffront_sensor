@@ -1,5 +1,9 @@
-#include "WaveFrontSensor.h"
+﻿#include "WaveFrontSensor.h"
 #include <QtWidgets/QApplication>
+
+
+
+
 
 int main(int argc, char *argv[])
 {

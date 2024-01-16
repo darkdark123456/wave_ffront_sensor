@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include	<qmap.h>
 
 
@@ -7,7 +7,7 @@ class Configuration {
 private:
 	QMap<QString, double> conf;
 public:
-	/** ¾²Ì¬ÅäÖÃ */
+	/** é™æ€é…ç½® */
 	Configuration() {
 		conf.insert("nu_detector", 512);
 		conf.insert("nv_detector", 512);
@@ -20,17 +20,17 @@ public:
 		conf.insert("wavelength", 1.0972e-10);
 	}
 
-	/** ±£ÁôÒ»¸ö¶¯Ì¬ÅäÖÃ½Ó¿Ú */
+	/** ä¿ç•™ä¸€ä¸ªåŠ¨æ€é…ç½®æŽ¥å£ */
 	/**
-	 * nu_detector nu¼ì²âÆ÷
-	 * nv_detector nv¼ì²âÆ÷
-	 * unsmapling ÉÏ²ÉÑù
-	 * grid period Íø¸ñÖÜÆÚ
-	 * dist_mask_to_detector ÇøÓòÑÚÂë¼ì²âÆ÷
-	 * lowest_fringe_order ×îµÍ±ßÔµ£¿£¿
-	 * centroid_power ÖÊÐÄ
-	 * detector_pixel_sie ¼ì²âÏñËØµãµÄÇøÓò´óÐ¡
-	 * wave length ²¨³¤
+	 * nu_detector nuæ£€æµ‹å™¨
+	 * nv_detector nvæ£€æµ‹å™¨
+	 * unsmapling ä¸Šé‡‡æ ·
+	 * grid period ç½‘æ ¼å‘¨æœŸ
+	 * dist_mask_to_detector åŒºåŸŸæŽ©ç æ£€æµ‹å™¨
+	 * lowest_fringe_order æœ€ä½Žè¾¹ç¼˜ï¼Ÿï¼Ÿ
+	 * centroid_power è´¨å¿ƒ
+	 * detector_pixel_sie æ£€æµ‹åƒç´ ç‚¹çš„åŒºåŸŸå¤§å°
+	 * wave length æ³¢é•¿
 	 */
 	Configuration(int& nu_detector_size, int& nv_detector_size,
 		double& upsampling, double& grid_period,
@@ -49,7 +49,7 @@ public:
 		conf.insert("wavelength", wavelength);
 	}
 
-	auto operator[](const QString& key) -> decltype(conf[key]) {
+	inline auto operator[](const QString& key) -> decltype(conf[key]) {
 		if (conf.find(key) == conf.end()) {
 
 			conf.insert(key, 0.);
@@ -58,6 +58,16 @@ public:
 		return conf[key];
 	}
 
+	inline bool  insert(const QString& key, double value) {
+
+		if (conf.find(key) == conf.end()) {
+
+			return false;
+		}
+		conf.insert(key, value);
+
+		return true;
+	}
 
 	~Configuration() {
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include	<exception>
 
 struct KeyNotFindException : public std::exception {
@@ -97,3 +97,73 @@ struct DenominatorZeroException : std::exception {
 	}
 };
 
+
+
+struct MatrixMultDimException : std::exception {
+
+	MatrixMultDimException() : std::exception(" Matrix Mult Exception ", 1) {
+
+
+	}
+
+	MatrixMultDimException(const char* const _Message) : std::exception(_Message, 1) {
+
+
+	}
+
+
+};
+
+struct TypeException : std::exception {
+
+	TypeException() : std::exception("Type Exception", 1) {
+
+	}
+
+	TypeException(const char* const Message_) : std::exception(Message_, 1) {
+
+	}
+
+};
+
+
+struct FftException : public std::exception {
+
+	FftException() : std::exception(" FFT Exception ", 1) {
+
+	}
+
+	FftException(const char* const _Message) : std::exception(_Message, 1) {
+
+
+	}
+
+};
+
+
+
+struct  ShapeException : std::exception
+{
+public:
+	ShapeException() : std::exception("Shape exception throw ",1) {
+
+	}
+
+	ShapeException(const char* const message) : std::exception(message, 1) {
+
+
+	}
+
+};
+
+
+struct  SparseQRException  : std::exception
+{
+public:
+	SparseQRException() : std::exception("Sparse QR exception throw",1) {
+
+	}
+	SparseQRException(const char* const message) : std::exception(message, 1) {
+
+	}
+};
