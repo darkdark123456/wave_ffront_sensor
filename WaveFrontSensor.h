@@ -8,6 +8,7 @@
 #include    <opencv.hpp>
 #include    <opencv2/opencv.hpp>
 #include    <opencv2/core/utils/logger.hpp>
+
 #include    <qfile>
 #include    <qfiledialog.h>
 #include    <qtoolbutton.h>
@@ -39,6 +40,7 @@
 #include    "Legendre.h"
 #include    "OMDA_Algorithm.h"
 #include    "matplotlibcpp.h"
+#include    "ConfigurationWidget.h"
 
 namespace plt = matplotlibcpp;
 
@@ -131,9 +133,7 @@ public:
     static bool FFT_Shift(cv::Mat& ,cv::Mat&);
     static bool IFFT(cv::Mat&, cv::Mat&);
     static void IFFT_Shift(cv::Mat&);
-public:
-    void fffff();
-    void ggggg();
+
 private:
     Ui::WaveFrontSensorClass*     ui;
     QSharedPointer<QToolButton>   select_data_tool_button_;
@@ -146,4 +146,5 @@ private:
     QString                       hartmanngram_png_filename = "./data_example_21/ex21_res_int_pr_se.dat.png";
     QGraphicsView*                graphic_view;
     QGraphicsScene*               graphio_scene;
+    ConfigurationWidget*          configutration_widget=nullptr;
 };

@@ -203,7 +203,6 @@ namespace OMDA_Algorithm {
 
 		//! 这里在膨胀计算前必须先镜像 据观察结果 scipy 和 opencv中 读取kernel的数据的顺序不同  
 		cv::flip(kernel, kernel,1);
-		std::cout << kernel << std::endl;
 		cv::dilate(expand_mask, dilated_expand_mask, kernel, cv::Point(-1, -1), 1, cv::BORDER_CONSTANT, cv::Scalar(0));
 		cv::Mat mask_x = dilated_expand_mask.colRange(1, dilated_expand_mask.cols - 2) & (~expand_mask.colRange(1, expand_mask.cols - 2));
 

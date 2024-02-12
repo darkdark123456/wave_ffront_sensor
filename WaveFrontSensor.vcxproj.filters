@@ -41,9 +41,15 @@
     <ResourceCompile Include="WaveFrontSensor.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <QtRcc Include="Resource.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigurationWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -72,5 +78,18 @@
     <ClInclude Include="Zernike.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="x64\Debug\uic\ui_ConfigurationWidget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="ConfigurationWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="ConfigurationWidget.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

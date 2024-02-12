@@ -167,3 +167,16 @@ public:
 
 	}
 };
+
+
+struct PlotException : std::exception
+{
+public:
+	PlotException() : std::exception(u8" <--!!异常 在非第一次计算时关闭已经显示的结果图像,否则会抛出plt::show()异常!---> ", 1) {
+
+	}
+
+	PlotException(const char* const message) : std::exception(message, 1) {
+
+	}
+};

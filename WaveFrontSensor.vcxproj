@@ -38,7 +38,7 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>5.15.2_msvc2019_64</QtInstall>
-    <QtModules>core;gui;widgets;concurrent;charts</QtModules>
+    <QtModules>core;gui;widgets;concurrent</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
@@ -68,6 +68,7 @@
     <IncludePath>D:\eigen-3.4.0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <IncludePath>D:\eigen-3.4.0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -78,6 +79,15 @@
       <AdditionalLibraryDirectories>D:\PyForCpp\libs</AdditionalLibraryDirectories>
       <AdditionalDependencies>"D:\PyForCpp\libs\_tkinter.lib";"D:\PyForCpp\libs\python3.lib";"D:\PyForCpp\libs\python312.lib";"D:\PyForCpp\libs\python312_d.lib";%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalDependencies>"D:\PyForCpp\libs\_tkinter.lib";"D:\PyForCpp\libs\python3.lib";"D:\PyForCpp\libs\python312.lib";"D:\PyForCpp\libs\python312_d.lib";%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\PyForCpp\include;D:\PyForCpp\Lib\site-packages\numpy\core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
@@ -104,9 +114,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <QtRcc Include="Resource.qrc" />
     <QtRcc Include="WaveFrontSensor.qrc" />
+    <QtUic Include="ConfigurationWidget.ui" />
     <QtUic Include="WaveFrontSensor.ui" />
     <QtMoc Include="WaveFrontSensor.h" />
+    <ClCompile Include="ConfigurationWidget.cpp" />
     <ClCompile Include="WaveFrontSensor.cpp" />
     <ClCompile Include="main.cpp" />
     <None Include="WaveFrontSensor.ico" />
@@ -115,11 +128,13 @@
   <ItemGroup>
     <ClInclude Include="Algorithm.h" />
     <ClInclude Include="Configuration.h" />
+    <QtMoc Include="ConfigurationWidget.h" />
     <ClInclude Include="CustomException.h" />
     <ClInclude Include="Legendre.h" />
     <ClInclude Include="ModalMethodCalculateModel.h" />
     <ClInclude Include="OMDA_Algorithm.h" />
     <ClInclude Include="Phase.h" />
+    <ClInclude Include="x64\Debug\uic\ui_ConfigurationWidget.h" />
     <ClInclude Include="Zernike.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

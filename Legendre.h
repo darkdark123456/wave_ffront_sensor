@@ -182,12 +182,77 @@ namespace Legendre {
 	//! 勒让德多项式分解
 	static void decompose(cv::Mat& z2d, cv::Mat& x2d, cv::Mat& y2d, cv::Mat& jld, cv::Mat& xy_norm,cv::Mat& z2d_rec,cv::Mat& coef_est) {
 
+		//double x_norm;
+		//double y_norm;
+		//if (xy_norm .empty()) {
+		//	double max_v, min_v;
+		//	cv::Point max_pos, min_pos;
+		//	cv::minMaxLoc(x2d,&min_v, &max_v, &max_pos, &min_pos);
+		//	x_norm = (max_v - min_v) / 2;
+		//	cv::minMaxLoc(y2d, &min_v, &max_v, &max_pos, &min_pos);
+		//	y_norm = (max_v - min_v) / 2;
+		//	xy_norm = cv::Mat(cv::Size(2, 1), CV_64F);
+		//	xy_norm.at<double>(0, 0) = x_norm;
+		//	xy_norm.at<double>(0, 1) = y_norm;
+
+
+		//}
+
+		//else{
+		//	x_norm = xy_norm.at<double>(0, 0);
+		//	y_norm = xy_norm.at<double>(0, 1);
+		//}
+		//cv::Mat z2d_,cld,zx2d, zy2d;
+		//std::vector<cv::Mat> zm3d, zxm3d, zym3d;
+		//cv::Mat mld, nld;
+		//cv::Mat xn2d = (x2d - cv::mean(x2d)[0]) / x_norm;
+		//cv::Mat yn2d = (y2d - cv::mean(y2d)[0]) / y_norm;
+		//legendre_xyjc(xn2d, yn2d, jld, cld, z2d_, zx2d, zy2d, zm3d, zxm3d, zym3d, mld, nld);
+		//zx2d.release();
+		//zy2d.release();
+		//cld.release();
+		//mld.release();
+		//nld.release();
+		//zxm3d.resize(0);
+		//zym3d.resize(0);
+
+		//cv::Mat zm2d;
+		//cv::Mat z1d = z2d.reshape(1, z2d.rows * z2d.cols).t();
+		//HIOlAB_CXX_14::DimensionReduce<double>(zm3d, zm2d);
+		//cv::Mat mask = cv::Mat::zeros(z1d.rows, z1d.cols, CV_8U);
+		//HIOlAB_CXX_14::isfinite<double>(z1d, mask);
+
+		//cv::Mat zm2d_(z1d.cols - cv::countNonZero(mask), zm2d.cols, CV_64F);
+		//HIOlAB_CXX_14::removeNanValue<double>(zm2d, mask,zm2d_,0);
+		//zm2d.release();
+
+		//Eigen::MatrixXd matrix(zm2d_.rows, zm2d_.cols);
+		//cv::cv2eigen(zm2d_, matrix);
+		//zm2d_.release();
+
+		//Eigen::MatrixXd matrix_inverse = matrix.completeOrthogonalDecomposition().pseudoInverse();
+		//std::vector<double> z1d_nan_vector;
+		//HIOlAB_CXX_14::Update<double>(z1d, mask, z1d_nan_vector, 0);
+		//z1d.release();
+
+		//cv::Mat tmp(matrix_inverse.rows(), matrix_inverse.cols(), CV_64F);
+		//cv::eigen2cv(matrix_inverse, tmp);
+
+		//cv::Mat tmp_2 = cv::Mat(z1d_nan_vector).t();
+
+		//HIOlAB_CXX_14::dot<double>(tmp, tmp_2, coef_est);
+
+
+
+		//zm3d.resize(0);
+		//legendre_xyjc(xn2d,yn2d,jld,coef_est,z2d_,zx2d,zy2d,zm3d,zxm3d,zym3d,mld,nld);
+
 		double x_norm;
 		double y_norm;
-		if (xy_norm .empty()) {
+		if (xy_norm.empty()) {
 			double max_v, min_v;
 			cv::Point max_pos, min_pos;
-			cv::minMaxLoc(x2d,&min_v, &max_v, &max_pos, &min_pos);
+			cv::minMaxLoc(x2d, &min_v, &max_v, &max_pos, &min_pos);
 			x_norm = (max_v - min_v) / 2;
 			cv::minMaxLoc(y2d, &min_v, &max_v, &max_pos, &min_pos);
 			y_norm = (max_v - min_v) / 2;
@@ -198,11 +263,11 @@ namespace Legendre {
 
 		}
 
-		else{
+		else {
 			x_norm = xy_norm.at<double>(0, 0);
 			y_norm = xy_norm.at<double>(0, 1);
 		}
-		cv::Mat z2d_,cld,zx2d, zy2d;
+		cv::Mat z2d_, cld, zx2d, zy2d;
 		std::vector<cv::Mat> zm3d, zxm3d, zym3d;
 		cv::Mat mld, nld;
 		cv::Mat xn2d = (x2d - cv::mean(x2d)[0]) / x_norm;
@@ -223,7 +288,7 @@ namespace Legendre {
 		HIOlAB_CXX_14::isfinite<double>(z1d, mask);
 
 		cv::Mat zm2d_(z1d.cols - cv::countNonZero(mask), zm2d.cols, CV_64F);
-		HIOlAB_CXX_14::removeNanValue<double>(zm2d, mask,zm2d_,0);
+		HIOlAB_CXX_14::removeNanValue<double>(zm2d, mask, zm2d_, 0);
 		zm2d.release();
 
 		Eigen::MatrixXd matrix(zm2d_.rows, zm2d_.cols);
@@ -244,7 +309,7 @@ namespace Legendre {
 
 
 		zm3d.resize(0);
-		legendre_xyjc(xn2d,yn2d,jld,coef_est,z2d_rec,zx2d,zy2d,zm3d,zxm3d,zym3d,mld,nld);
+		legendre_xyjc(xn2d, yn2d, jld, coef_est, z2d_rec, zx2d, zy2d, zm3d, zxm3d, zym3d, mld, nld);
 
 	}
 

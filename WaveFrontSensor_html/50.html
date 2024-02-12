@@ -1,0 +1,113 @@
+<html><head><title>WaveFrontSensor.h</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="sourcestyles.css" />
+</head><body link="blue" vlink="blue">
+<h3>File: D:\project4\WaveFrontSensor\WaveFrontSensor.h</h3>
+<SCRIPT>
+defaultStatus = "File: D:\\project4\\WaveFrontSensor\\WaveFrontSensor.h";
+top.document.title  = "WaveFrontSensor.h";
+</SCRIPT>
+<pre><span class="default"></span><a name="1"><font size=-1>1     </font></a><span class="default"></span><span class="preproc">#pragma </span><span class="default">once</span>
+<a name="2"><font size=-1>2     </font></a><span class="default"></span>
+<a name="3"><font size=-1>3     </font></a><span class="default"></span><span class="preproc">#include    </span><span class="string">&lt;QtWidgets/QWidget&gt;</span>
+<a name="4"><font size=-1>4     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&quot;ui_WaveFrontSensor.h&quot;</span>
+<a name="5"><font size=-1>5     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;opencv.hpp&gt;</span>
+<a name="6"><font size=-1>6     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;opencv2/core/utils/logger.hpp&gt;</span>
+<a name="7"><font size=-1>7     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qfile&gt;</span>
+<a name="8"><font size=-1>8     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qfiledialog.h&gt;</span>
+<a name="9"><font size=-1>9     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qtoolbutton.h&gt;</span>
+<a name="10"><font size=-1>10     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qgridlayout.h&gt;</span>
+<a name="11"><font size=-1>11     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qlabel.h&gt;</span>
+<a name="12"><font size=-1>12     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qdialog.h&gt;</span>
+<a name="13"><font size=-1>13     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qplaintextedit.h&gt;</span>
+<a name="14"><font size=-1>14     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qtextstream.h&gt;</span>
+<a name="15"><font size=-1>15     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;future&gt;</span>
+<a name="16"><font size=-1>16     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qmessagebox.h&gt;</span>
+<a name="17"><font size=-1>17     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qgraphicsview.h&gt;</span>
+<a name="18"><font size=-1>18     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qgraphicsscene.h&gt;</span>
+<a name="19"><font size=-1>19     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qimage.h&gt;</span>
+<a name="20"><font size=-1>20     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qpixmap.h&gt;</span>
+<a name="21"><font size=-1>21     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&quot;Configuration.h&quot;</span>
+<a name="22"><font size=-1>22     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&quot;CustomException.h&quot;</span>
+<a name="23"><font size=-1>23     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&quot;Algorithm.h&quot;</span>
+<a name="24"><font size=-1>24     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&quot;TimeConsuming.h&quot;</span>
+<a name="25"><font size=-1>25     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;complex.h&gt;</span>
+<a name="26"><font size=-1>26     </font></a><span class="string"></span><span class="preproc">#include    </span><span class="string">&lt;qmath.h&gt;</span>
+<a name="27"><font size=-1>27     </font></a><span class="string"></span>
+<a name="28"><font size=-1>28     </font></a><span class="string"></span>
+<a name="29"><font size=-1>29     </font></a><span class="string"></span>
+<a name="30"><font size=-1>30     </font></a><span class="string"></span>
+<a name="31"><font size=-1>31     </font></a><span class="string"><a href="dictionary_Q.html#74">QT_BEGIN_NAMESPACE</a></span>
+<a name="32"><font size=-1>32     </font></a><span class="string"></span><span class="keyword">namespace </span><span class="default">Ui { </span><span class="keyword">class </span><span class="default">WaveFrontSensorClass; };</span>
+<a name="33"><font size=-1>33     </font></a><span class="default">QT_END_NAMESPACE</span>
+<a name="34"><font size=-1>34     </font></a><span class="default"></span>
+<a name="35"><font size=-1>35     </font></a><span class="default"></span><span class="keyword">class </span><span class="default">WaveFrontSensor : </span><span class="keyword">public </span><span class="default">QWidget</span>
+<a name="36"><font size=-1>36     </font></a><span class="default">{</span>
+<a name="37"><font size=-1>37     </font></a><span class="default">    Q_OBJECT</span>
+<a name="38"><font size=-1>38     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="39"><font size=-1>39     </font></a><span class="default">    </span><span class="keyword">typedef </span><span class="default">QVector&lt;QVector&lt;</span><span class="keyword">float</span><span class="default">&gt;&gt; QVector2D_;</span>
+<a name="40"><font size=-1>40     </font></a><span class="default">    </span><span class="keyword">typedef </span><span class="default">QVector&lt;QVector&lt;QVector&lt;</span><span class="keyword">float</span><span class="default">&gt;&gt;&gt; QVector3D_;</span>
+<a name="41"><font size=-1>41     </font></a><span class="default">    </span><span class="keyword">typedef </span><span class="default">QVector&lt;QVector&lt;QVector&lt;QVector&lt;</span><span class="keyword">float</span><span class="default">&gt;&gt;&gt;&gt; QVector4D_;</span>
+<a name="42"><font size=-1>42     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="43"><font size=-1>43     </font></a><span class="default">    WaveFrontSensor(QWidget *parent = nullptr);</span>
+<a name="44"><font size=-1>44     </font></a><span class="default">    ~WaveFrontSensor();</span>
+<a name="45"><font size=-1>45     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="46"><font size=-1>46     </font></a><span class="default">    </span><span class="keyword">void </span><span class="default">initDefaultDisplay();</span>
+<a name="47"><font size=-1>47     </font></a><span class="default">    </span><span class="keyword">void </span><span class="default">free();</span>
+<a name="48"><font size=-1>48     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="49"><font size=-1>49     </font></a><span class="default">    </span><span class="keyword">void </span><span class="default">processHartmanngram(   Configuration&amp;, cv::Mat&amp;, cv::Mat, HIOlAB_CXX_14::ThresholdMode thresholding_mode=HIOlAB_CXX_14::ThresholdMode::Adaptive,</span>
+<a name="50"><font size=-1>50     </font></a><span class="default">                                 </span><span class="keyword">int </span><span class="default">img_int_thr = </span><span class="number">0</span><span class="default">, </span><span class="keyword">int </span><span class="default">area_thr = </span><span class="number">1</span><span class="default">, </span><span class="keyword">float </span><span class="default">ration_thr = </span><span class="number">0.05</span><span class="default">,</span>
+<a name="51"><font size=-1>51     </font></a><span class="default">                                 </span><span class="keyword">int </span><span class="default">min_order_u = </span><span class="number">0</span><span class="default">, </span><span class="keyword">int </span><span class="default">max_order_u = </span><span class="number">0</span><span class="default">,</span>
+<a name="52"><font size=-1>52     </font></a><span class="default">                                 </span><span class="keyword">int </span><span class="default">min_order_v = </span><span class="number">0</span><span class="default">, </span><span class="keyword">int </span><span class="default">max_order_v = </span><span class="number">0</span><span class="default">,</span>
+<a name="53"><font size=-1>53     </font></a><span class="default">                                 </span><span class="keyword">int </span><span class="default">edge_exclusion = </span><span class="number">1</span><span class="default">);</span>
+<a name="54"><font size=-1>54     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="55"><font size=-1>55     </font></a><span class="default">    </span><span class="keyword">void                            </span><span class="default">readDataFromDisk(QString filename,QVector&lt;</span><span class="keyword">float</span><span class="default">&gt;&amp; intensity);</span>
+<a name="56"><font size=-1>56     </font></a><span class="default">    QVector2D_                      readWaveFrontSensorImageDat(QString filename, </span><span class="keyword">float </span><span class="default">nu_detector, </span><span class="keyword">float </span><span class="default">nv_detector, </span><span class="keyword">int </span><span class="default">upsampleing);</span>
+<a name="57"><font size=-1>57     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="58"><font size=-1>58     </font></a><span class="default">    </span><span class="keyword">void                            </span><span class="default">initInfoDialog();</span>
+<a name="59"><font size=-1>59     </font></a><span class="default">    QVector&lt;QVector&lt;quint16&gt;&gt;      addNoNoise(QVector2D_&amp;);</span>
+<a name="60"><font size=-1>60     </font></a><span class="default">    </span><span class="keyword">void                            </span><span class="default">CAT_DATA_INFO(</span><span class="keyword">const </span><span class="default">QVector4D_&amp;,</span><span class="keyword">const </span><span class="default">QVector3D_&amp;);</span>
+<a name="61"><font size=-1>61     </font></a><span class="default">    </span><span class="keyword">void                            </span><span class="default">writreGaryscalePNG(</span><span class="keyword">const </span><span class="default">cv::Mat&amp; );</span>
+<a name="62"><font size=-1>62     </font></a><span class="default">    </span><span class="keyword">void                            </span><span class="default">setConfHartmanngramFilename(Configuration&amp; );</span>
+<a name="63"><font size=-1>63     </font></a><span class="default"></span><span class="keyword">public </span><span class="default">:</span>
+<a name="64"><font size=-1>64     </font></a><span class="default">    </span><span class="keyword">void </span><span class="default">analyzeHartmanngram(   cv::Mat&amp; hartmanngram, </span><span class="keyword">float </span><span class="default">dist_mask_to_detector, </span><span class="keyword">float </span><span class="default">pixel_size = </span><span class="number">1.48e-6</span><span class="default">, </span>
+<a name="65"><font size=-1>65     </font></a><span class="default">                                 </span><span class="keyword">float </span><span class="default">grid_period = </span><span class="number">20e-6</span><span class="default">, HIOlAB_CXX_14::ThresholdMode thresholding_mode=HIOlAB_CXX_14::ThresholdMode::Adaptive,</span>
+<a name="66"><font size=-1>66     </font></a><span class="default">                                 </span><span class="keyword">unsigned char </span><span class="default">img_int_thr=</span><span class="number">0</span><span class="default">,</span><span class="keyword">int </span><span class="default">block_size=</span><span class="number">31</span><span class="default">,</span><span class="keyword">int </span><span class="default">area_thr=</span><span class="number">1</span><span class="default">,</span>
+<a name="67"><font size=-1>67     </font></a><span class="default">                                 </span><span class="keyword">int </span><span class="default">min_fringle_number=</span><span class="number">8</span><span class="default">,cv::Mat starting_pixel=cv::Mat(),</span>
+<a name="68"><font size=-1>68     </font></a><span class="default">                                 </span><span class="keyword">float </span><span class="default">ration_thr=</span><span class="number">0.05</span><span class="default">,</span>
+<a name="69"><font size=-1>69     </font></a><span class="default">                                 </span><span class="keyword">float </span><span class="default">centroid_power=</span><span class="number">1.7</span><span class="default">,</span>
+<a name="70"><font size=-1>70     </font></a><span class="default">                                 </span><span class="keyword">int </span><span class="default">min_order_u=</span><span class="number">0</span><span class="default">,</span><span class="keyword">int </span><span class="default">max_order_u=</span><span class="number">0</span><span class="default">,</span>
+<a name="71"><font size=-1>71     </font></a><span class="default">                                 </span><span class="keyword">int </span><span class="default">min_order_v=</span><span class="number">0</span><span class="default">,</span><span class="keyword">int </span><span class="default">max_order_v=</span><span class="number">0</span><span class="default">,</span>
+<a name="72"><font size=-1>72     </font></a><span class="default">                                 </span><span class="keyword">int </span><span class="default">edge_exclusion=</span><span class="number">1</span><span class="default">,</span>
+<a name="73"><font size=-1>73     </font></a><span class="default">                                 </span><span class="keyword">bool </span><span class="default">is_show=</span><span class="keyword">false</span><span class="default">);</span>
+<a name="74"><font size=-1>74     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="75"><font size=-1>75     </font></a><span class="default">    </span><span class="keyword">void </span><span class="default">calculateWrappedPhasesUV( cv::Mat&amp; hartmanngram, cv::Mat&amp; u2d_image, cv::Mat&amp; v2d_image,</span><span class="keyword">int </span><span class="default">min_fringe_number,</span>
+<a name="76"><font size=-1>76     </font></a><span class="default">                                    cv::Mat&amp; u_wrapped_phase,cv::Mat&amp; u_phase,</span>
+<a name="77"><font size=-1>77     </font></a><span class="default">                                    cv::Mat&amp; v_wrapped_phase,cv::Mat&amp; v_phase);</span>
+<a name="78"><font size=-1>78     </font></a><span class="default"></span>
+<a name="79"><font size=-1>79     </font></a><span class="default">    </span><span class="keyword">void </span><span class="default">calculateWrappedPhase(cv::Mat&amp; spectrum,cv::Mat&amp; u2d_img,cv::Mat&amp; v2d_img,</span><span class="keyword">int </span><span class="default">min_fringe_number,cv::Mat&amp; wrapped_phase,cv::Mat&amp; amplitude,</span><span class="keyword">bool </span><span class="default">is_u = </span><span class="keyword">true</span><span class="default">);</span>
+<a name="80"><font size=-1>80     </font></a><span class="default"></span>
+<a name="81"><font size=-1>81     </font></a><span class="default">    </span><span class="keyword">void </span><span class="default">calculateCentroid(cv::Mat&amp;, cv::Mat&amp;, cv::Mat&amp;, cv::Mat&amp;, cv::Mat&amp;);</span>
+<a name="82"><font size=-1>82     </font></a><span class="default"></span>
+<a name="83"><font size=-1>83     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="84"><font size=-1>84     </font></a><span class="default">    </span><span class="keyword">static bool </span><span class="default">FFT2(cv::Mat&amp;,cv::Mat&amp;);</span>
+<a name="85"><font size=-1>85     </font></a><span class="default">    </span><span class="keyword">static bool </span><span class="default">FFT1(cv::Mat&amp;, cv::Mat&amp;);</span>
+<a name="86"><font size=-1>86     </font></a><span class="default">    </span><span class="keyword">static bool </span><span class="default">FFT_Shift(cv::Mat&amp; ,cv::Mat&amp;);</span>
+<a name="87"><font size=-1>87     </font></a><span class="default">    </span><span class="keyword">static bool </span><span class="default">IFFT(cv::Mat&amp;, cv::Mat&amp;);</span>
+<a name="88"><font size=-1>88     </font></a><span class="default">    </span><span class="keyword">static void </span><span class="default">IFFT_Shift(cv::Mat&amp;);</span>
+<a name="89"><font size=-1>89     </font></a><span class="default"></span><span class="keyword">public</span><span class="default">:</span>
+<a name="90"><font size=-1>90     </font></a><span class="default">    </span><span class="keyword">void </span><span class="default">TestFunction();</span>
+<a name="91"><font size=-1>91     </font></a><span class="default"></span><span class="keyword">private</span><span class="default">:</span>
+<a name="92"><font size=-1>92     </font></a><span class="default">    Ui::WaveFrontSensorClass*    ui;</span>
+<a name="93"><font size=-1>93     </font></a><span class="default">    QSharedPointer&lt;QToolButton&gt;  select_data_tool_button_;</span>
+<a name="94"><font size=-1>94     </font></a><span class="default">    QGridLayout*                  grid_layout_;</span>
+<a name="95"><font size=-1>95     </font></a><span class="default">    QString                       filename_;</span>
+<a name="96"><font size=-1>96     </font></a><span class="default">    QPlainTextEdit*               infoText;</span>
+<a name="97"><font size=-1>97     </font></a><span class="default">    QDialog*                      dialog;</span>
+<a name="98"><font size=-1>98     </font></a><span class="default">    QString                       hartmanngram_filename = </span><span class="string">&quot;ex21_res_int_pr_se.dat&quot;</span><span class="default">;</span>
+<a name="99"><font size=-1>99     </font></a><span class="default">    QString                       hartmanngram_png_filename = </span><span class="string">&quot;./data_example_21/ex21_res_int_pr_se.dat.png&quot;</span><span class="default">;</span>
+<a name="100"><font size=-1>100     </font></a><span class="default">    QGraphicsView*                graphic_view;</span>
+<a name="101"><font size=-1>101     </font></a><span class="default">    QGraphicsScene*               graphio_scene;</span>
+<a name="102"><font size=-1>102     </font></a><span class="default">};</span>
+<a name="103"><font size=-1>103     </font></a><span class="default"></span>
+</pre></body></html>

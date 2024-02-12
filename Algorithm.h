@@ -986,8 +986,6 @@ namespace HIOlAB_CXX_14 {
 
 
 
-
-
     template <typename T,typename U>
     static void thresholdProcessing(QVector<QVector<T>>& Array2D, const U& threshold) {
         auto rows = Array2D.size();
@@ -2098,11 +2096,6 @@ namespace HIOlAB_CXX_14 {
 
             throw VectorNullException("InputArray or mask is empty in the removeNanValue(T Args&&)...\n");
         }
-
-        //if (mask.rows != matrix.rows  || mask.cols != matrix.cols) {
-        //    
-        //        throw ShapeException("InpputArray shape != mask shape in the  removeNanValue(T Args&&)....");
-        //}
         int index = 0;
         for (int i = 0; i < matrix.rows; i++) {
             if (cv::countNonZero(mask.row(i)) == 0) {
@@ -2161,70 +2154,5 @@ namespace HIOlAB_CXX_14 {
             outputArray.at < T>(0,i)= value;
         }
     }
-
-
-
-
-
-    template <typename U>
-    static void Print_U_Char_Matrix(cv::Mat& Mat) {
-
-        for (int i = 0; i < 1; i++) {
-            for (int j = 0; j < 10; j++) {
-
-                std::cout << static_cast<int>(Mat.at<U>(i, j)) << " ";
-            }
-
-            std::cout << "\n";
-            std::cout << "***********" << "\n";
-        }
-
-        for (int i = Mat.rows - 1; i < Mat.rows; i++) {
-            for (int j = 0; j < Mat.cols; j++) {
-
-                std::cout << static_cast<int>(Mat.at<U>(i, j)) << " ";
-            }
-
-            std::cout << "\n";
-            std::cout << "***********" << "\n";
-        }
-    }
-
-
-
-    template <typename U>
-    static void Print_Matrix(cv::Mat& Mat) {
-
-        for (int i = 0; i < 1; i++) {
-            for (int j = 0; j < Mat.cols; j++) {
-
-                std::cout << Mat.at<U>(i, j) << " ";
-            }
-
-            std::cout << "\n";
-            std::cout << "***********" << "\n";
-        }
-
-    }
-
-
-    template<typename U>
-    static void Print_Complex_Matrix(cv::Mat& Complex_Mat) {
-   
-        for (int i = 0; i < 1; ++i) {
-            for (int j = 0; j < 10; ++j) {
-                std::complex<U> value = Complex_Mat.at<std::complex<U>>(i, j);
-                std::cout << "(" << value.real() << "," << value.imag() << "j )" << " ";
-
-            }
-            std::cout << "\n";
-            std::cout << "***********" << "\n";
-    }
-
-    }
-
-
-
-
 
 };

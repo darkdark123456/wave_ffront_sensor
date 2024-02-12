@@ -5,34 +5,116 @@ WaveFrontSensor::WaveFrontSensor(QWidget *parent)
     , ui(new Ui::WaveFrontSensorClass())
 {
     ui->setupUi(this);
+    cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
     initInfoDialog();
     initDefaultDisplay();
-    
     connect(this, &WaveFrontSensor::loadMessage, this, &WaveFrontSensor::loadMessageToDialog);
+
     connect(parms_config_button_.data(), &QToolButton::clicked, this, [&]() -> void {
+        if (configutration_widget != nullptr) {
+            connect(configutration_widget, &QWidget::destroyed, this, [&]()->void {
+
+                configutration_widget = nullptr;
+
+                });
+            configutration_widget->show();
+        }        
+        
+        else{
+
+            configutration_widget = new ConfigurationWidget();
+            connect(configutration_widget, &QWidget::destroyed, this, [&]()->void {
+
+                configutration_widget = nullptr;
+
+                });
+            configutration_widget->show();
+        }
 
         });
+
     connect(select_data_tool_button_.data(), &QToolButton::clicked, this, [&]()->void {
-        filename_ = QFileDialog::getOpenFileName(this, " ", " ", "*.dat");
+        filename_ = QFileDialog::getOpenFileName(this, " ", " ", "*.dat;;*.bmp;;*.png");
         if (filename_.isEmpty() || filename_.isNull()) {
 
-            QMessageBox::warning(this, "警告", u8"没有获得选择的数据，请重新选择数据");
+            QMessageBox::warning(this, u8"警告", u8"没有获得选择的数据，请重新选择数据");
             return;
+
+        }
+        infoText->clear();
+        Configuration configuration;
+        if (!configutration_widget) {
+
+            QMessageBox::warning(nullptr, u8"警告", u8"将使用默认参数进行计算");
+            infoText->appendPlainText(u8"\n>>>    <--配置参数-->  ");
+            infoText->appendPlainText(u8">>>    *********************************************  ");
+            infoText->appendPlainText(QString(u8"       [nu检测器]            %1 ").arg(512));
+            infoText->appendPlainText(QString(u8"       [nv检测器]            %1 ").arg(512));
+            infoText->appendPlainText(QString(u8"       [上采样率]            %1 ").arg(2));
+            infoText->appendPlainText(QString(u8"       [网格周期]            %1 ").arg(20e-06));
+            infoText->appendPlainText(QString(u8"       [最低边缘]            %1 ").arg(8));
+            infoText->appendPlainText(QString(u8"       [中心量]              %1 ").arg(1.7));
+            infoText->appendPlainText(QString(u8"       [波长]                %1 ").arg(1.0972e-10));
+            infoText->appendPlainText(QString(u8"       [区域掩码检测器]      %1 ").arg(0.2));
+            infoText->appendPlainText(QString(u8"       [检测像素区域大小]    %1 ").arg(1.48e-06));
+            infoText->appendPlainText(u8">>>    *********************************************\n  ");
+            QCoreApplication::processEvents();
+        }
+
+        else{
+
+            QMessageBox::information(this, u8" ", u8"将使用自定义参数进行计算");
+            std::tuple<Configuration, short, QString, bool> conf = configutration_widget->getConfiguraion();
+            configuration = std::get<0>(conf);
+            infoText->appendPlainText(u8"\n>>>    <--配置参数-->  ");
+            infoText->appendPlainText(u8">>>    *********************************************  ");
+            infoText->appendPlainText(QString(u8"       [nu检测器]            %1 ").arg(static_cast<int>(configuration["nu_detector"])));
+            infoText->appendPlainText(QString(u8"       [nv检测器]            %1 ").arg(static_cast<int>(configuration["nv_detector"])));
+            infoText->appendPlainText(QString(u8"       [上采样率]            %1 ").arg(static_cast<int>(configuration["upsampling"])));
+            infoText->appendPlainText(QString(u8"       [网格周期]            %1 ").arg(configuration["grid_period"]));
+            infoText->appendPlainText(QString(u8"       [最低边缘]            %1 ").arg(static_cast<int>(configuration["lowest_fringe_order"])));
+            infoText->appendPlainText(QString(u8"       [中心量]              %1 ").arg(configuration["centroid_power"]));
+            infoText->appendPlainText(QString(u8"       [波长]                %1 ").arg(configuration["wavelength"]));
+            infoText->appendPlainText(QString(u8"       [区域掩码检测器]      %1 ").arg(configuration["dist_mask_to_detector"]));
+            infoText->appendPlainText(QString(u8"       [检测像素区域大小]    %1 ").arg(configuration["detector_pixel_size"]));
+            infoText->appendPlainText(u8">>>    *********************************************\n  ");
+            QCoreApplication::processEvents();
+
+
 
         }
 
         try {
 
+            QStringList suffx_name = {"*.dat.bmp",".dat.png" ,".bmp", ".png" };
+            
+            if(filename_.endsWith(suffx_name[0],Qt::CaseSensitive) || filename_.endsWith(suffx_name[1], Qt::CaseSensitive) || filename_.endsWith(suffx_name[2], Qt::CaseSensitive) || filename_.endsWith(suffx_name[3], Qt::CaseSensitive)) {
+                qDebug() <<filename_<< "  \n";
+                cv::Mat source = cv::imread(filename_.toStdString());
+                if (source.empty()) {
+                    throw  VectorNullException("Read source file empty \n");
+                    return;
+                }
+                cv::Mat hartmann_image;
+                cv::cvtColor(source, hartmann_image, cv::COLOR_BGR2GRAY);
+                hartmann_image.convertTo(hartmann_image, CV_8U);
+                hartmann_image.convertTo(hartmann_image, CV_16U);
+                cv::Mat starting_pixel = (cv::Mat_<int>(1, 2) << static_cast<int>(configuration["nu_detector"] / 2), static_cast<int>(configuration["nv_detector"] / 2));
+                processHartmanngram(configuration, hartmann_image, starting_pixel, HIOlAB_CXX_14::ThresholdMode::OTSU);
 
-            Configuration configuration;
-            QVector2D_ waveFrontImageData = readWaveFrontSensorImageDat(filename_, configuration["nu_detector"], configuration["nv_detector"], configuration["upsampling"]);
-            QVector<QVector<quint16>> qt_hartmanngram_png = addNoNoise(waveFrontImageData);
-            QString png_filename = "./data_example_21/ex21_res_int_pr_se.dat.png";
-            cv::Mat hartmanngramm_png(qt_hartmanngram_png.size(), qt_hartmanngram_png[0].size(),CV_16U);
-            HIOlAB_CXX_14::array2D_Convert_CV_Mat<quint16,unsigned short>(qt_hartmanngram_png,hartmanngramm_png);
-            writreGaryscalePNG(hartmanngramm_png);
-            cv::Mat starting_pixel=(cv::Mat_<int>(1,2)<< static_cast<int>(configuration["nu_detector"] / 2),static_cast<int>(configuration["nv_detector"] / 2));
-            processHartmanngram(configuration, hartmanngramm_png, starting_pixel,HIOlAB_CXX_14::ThresholdMode::OTSU);
+
+            }
+            else
+            {
+                QVector2D_ waveFrontImageData = readWaveFrontSensorImageDat(filename_, configuration["nu_detector"], configuration["nv_detector"], configuration["upsampling"]);
+                QVector<QVector<quint16>> qt_hartmanngram_png = addNoNoise(waveFrontImageData);
+                cv::Mat hartmanngramm_png(qt_hartmanngram_png.size(), qt_hartmanngram_png[0].size(), CV_16U);
+                HIOlAB_CXX_14::array2D_Convert_CV_Mat<quint16, unsigned short>(qt_hartmanngram_png, hartmanngramm_png);
+                cv::Mat starting_pixel = (cv::Mat_<int>(1, 2) << static_cast<int>(configuration["nu_detector"] / 2), static_cast<int>(configuration["nv_detector"] / 2));
+                processHartmanngram(configuration, hartmanngramm_png, starting_pixel, HIOlAB_CXX_14::ThresholdMode::OTSU);
+            }
+
+            
         }
         catch (const std::exception& RUN_TIME_EXCEPTION) {
 
@@ -52,6 +134,21 @@ WaveFrontSensor::~WaveFrontSensor()
 
 void WaveFrontSensor::initDefaultDisplay() {
 
+    setFixedSize(450, 550);
+    QPalette palette;
+
+    palette.setBrush(QPalette::Background, QBrush(QPixmap(":/WaveFrontSensor/back/b1.png")));
+    setPalette(palette);
+  
+    QFont font;
+    font.setBold(1);
+    font.setPixelSize(14);
+    QIcon icon;
+    QPixmap pixmap_(":/WaveFrontSensor/back/icon3.png");
+    icon.addPixmap(pixmap_);
+    setWindowIcon(icon);
+
+
     grid_layout_ = new QGridLayout(this);
     select_data_tool_button_ = QSharedPointer<QToolButton>(new QToolButton());
     select_data_tool_button_->setText(u8"开始");
@@ -61,16 +158,22 @@ void WaveFrontSensor::initDefaultDisplay() {
     parms_config_button_->setText(u8"参数配置");
     
     select_data_tool_button_->setStyleSheet("QToolButton {"
-        "color: blue;"
+        "color:rgb(0, 85, 255) ;"
         "border-radius: 8px;"
-        "border: 2px solid #999;"
+        "border: 2px solid #ccf;"
+        "border-color: rgb(255, 0, 0);"
         "}");
+
     parms_config_button_->setStyleSheet("QToolButton {"
-        "color: blue;"
+        "color: rgb(0, 85, 255);"
         "border-radius: 8px;"
-        "border: 2px solid #999;"
+        "border: 2px solid #ccf;"
+        "border-color: rgb(255, 0, 0);"
         "}");
     
+
+    select_data_tool_button_->setFont(font);
+    parms_config_button_->setFont(font);
     grid_layout_->addWidget(parms_config_button_.data(), 0, 1);
 
     graphic_view = new QGraphicsView();
@@ -81,14 +184,6 @@ void WaveFrontSensor::initDefaultDisplay() {
 
 
 
-/**
- * 默认的值
- * \param filename   "data_exmaple_21//ex21_res_int_pr_se.dat"
- * \param nu_detector 512
- * \param nv_detector 512
- * \param upsampleing  2
- * \return  Array 2D
- */
 void WaveFrontSensor::readDataFromDisk(QString filename, QVector<float>& intensity) {
 
     QFile file(filename);
@@ -120,17 +215,28 @@ void WaveFrontSensor::readDataFromDisk(QString filename, QVector<float>& intensi
 
 void WaveFrontSensor::initInfoDialog() {
     
+
+    QFont font;
+    font.setBold(true);
     dialog = new QDialog(this);
-    dialog->setWindowTitle(u8"加载信息窗口");
-    dialog->setFixedSize(400, 500);
+    dialog->setWindowTitle(u8"运行窗口");
+    dialog->setFixedSize(450, 600);
+    dialog->setStyleSheet("font: 700 9pt Courier New;color: rgb(85, 85, 255); ");
+
+    QIcon icon;
+    QPixmap pixmap_(":/WaveFrontSensor/back/icon2.png");
+    icon.addPixmap(pixmap_);
+    dialog->setWindowIcon(icon);
+
+
     infoText = new QPlainTextEdit(dialog);
+    infoText->setFont(font);
     infoText->setReadOnly(true);
     infoText->setFixedSize(dialog->size());
-    infoText->appendPlainText(u8">>> 程序初始化......... ");
-    infoText->appendPlainText(u8">>> 程序初始化成功 ");
+    infoText->appendPlainText(u8">>>    程序初始化......... ");
+    infoText->appendPlainText(u8">>>    程序初始化成功 ");
     dialog->setUpdatesEnabled(true);
     dialog->show();
-    dialog->setUpdatesEnabled(true);
 }
 
 void WaveFrontSensor::InitLoadInfo() {
@@ -149,20 +255,14 @@ void WaveFrontSensor::loadMessageToDialog(const QString& message) {
 }
 
 
-/**
- * .
- * \param filename      采集到的数据
- * \param nu_detector   水平方向的检测
- * \param nv_detector   竖直方向上的检测
- * \param upsampleing   采样大小
- * 存在问题 如果数据类型维单精度float 我只想开辟一块4维空间(512,2,512,2)8MB 一块3维空间(512,2,512)4MB 一块2维空间(1024,1024)8MB 1块一维空间1024*1024  8MB，total=28MB 但是单线程读取磁盘是否太慢了经过实验大约需要3s
- */
+
 QVector<QVector<float>> WaveFrontSensor::readWaveFrontSensorImageDat(QString filename, float nu_detector, float nv_detector, int upsampleing) {
    
     
     QVector<float> intensity;
     QSize size(static_cast<int>(upsampleing * nv_detector), static_cast<int>(upsampleing * nu_detector));
-    emit loadMessageToDialog("load message succ ");
+    
+    emit loadMessageToDialog(u8">>>    <----正在加载数据----> ");
     try {
 
        
@@ -170,8 +270,11 @@ QVector<QVector<float>> WaveFrontSensor::readWaveFrontSensorImageDat(QString fil
         readDataFromDisk(filename, intensity);
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         std::chrono::duration<double> duration=end-start;
-        qDebug() <<u8"从磁盘读取文件耗时 " << duration.count() / (1000000) << " s";
-        infoText->appendPlainText(u8">>> 加载数据成功 ");
+        
+        infoText->appendPlainText(u8">>>    <----加载数据成功----> ");
+        infoText->appendPlainText(QString(u8">>>    <----从磁盘加载数据时间耗时 %1 s----> ").arg(duration.count()));
+        
+        infoText->appendPlainText(u8">>>    <----程序正在执行中---->");
         QCoreApplication::processEvents();
     }
     catch (const std::exception& fileOpenException) {
@@ -188,12 +291,11 @@ QVector<QVector<float>> WaveFrontSensor::readWaveFrontSensorImageDat(QString fil
         Intensity2D[i].resize(size.width());
     }
 
+
     HIOlAB_CXX_14::reshape(intensity, Intensity2D, size.height(), size.width());
     HIOlAB_CXX_14::flipud(Intensity2D);
 
-    
-    int dim[] = { static_cast<int>(nv_detector),upsampleing,static_cast<int>(nu_detector),upsampleing };
-
+    int dim[] = { static_cast<int>(nu_detector),upsampleing,static_cast<int>(nv_detector),upsampleing };
     QVector4D_ Array4D(dim[0], QVector<QVector<QVector<float>>>(dim[1], QVector<QVector<float>>(dim[2], QVector<float>(dim[3], 0))));
 
     try {
@@ -221,7 +323,6 @@ QVector<QVector<quint16>> WaveFrontSensor::addNoNoise(QVector2D_& intensity_map)
     QVector<QVector<quint16>> detector_image;
     char pixel_depth = 14;
 
-
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
     auto min_value = HIOlAB_CXX_14::minValue(intensity_map);
@@ -242,9 +343,9 @@ QVector<QVector<quint16>> WaveFrontSensor::addNoNoise(QVector2D_& intensity_map)
 
 void WaveFrontSensor::writreGaryscalePNG(const cv::Mat& hartmanngram_png) {
     
-    QString png_filename = "./data_example_21/ex21_res_int_pr_se.dat.png";
+    QString png_filename = "./data_example_21/ex21_res_int_pr_se.dat.bmp";
     cv::imwrite(png_filename.toStdString(), hartmanngram_png);
-    infoText->appendPlainText(u8">>> 保存数据图像成功 ");
+    infoText->appendPlainText(u8">>>    保存数据图像成功\n ");
     
 }
 
@@ -274,57 +375,6 @@ static void PYTHON_SUB_IMAGE_SHOW(float* image,int row,int cols,int order_u,int 
 }
 
 
-static void PYTHON_HARTMANNGRAM_SHOW() {
-
-    std::vector<double> x{ 1,2,3,4 };
-    std::vector<double> y{ 2,3,6,8 };
-    
-    plt::figure_size(200,400);
-    plt::title("x1");
-    plt::plot(x, y);
-
-    plt::show();
-}
-
-
-
-static void Function() {
-    Py_IsInitialized() ? HIOlAB_CXX_14::MessagePrint(u8">>>初始化Python环境成功") : Py_Initialize();
-    std::vector<double> x{ 1,2,3,4 };
-    std::vector<double> y{ 2,3,6,8 };
-    plt::figure_size(200, 400);
-    plt::plot(x, y);
-    plt::show();
-    Py_Finalize();
-}
-
-void WaveFrontSensor::fffff() {
-
-    std::vector<double> x{ 1,2,3,4 };
-    std::vector<double> y{ 2,3,6,8 };
-
-    plt::figure_size(200, 400);
-    plt::plot(x, y);
-
-    plt::show();
-}
-
-
-
-void WaveFrontSensor::ggggg() {
-
-    Py_IsInitialized() ? HIOlAB_CXX_14::MessagePrint(u8">>>初始化Python环境成功") : Py_Initialize();
-
-    //! do
-    std::vector<double> x{ 1,2,3,4 };
-    std::vector<double> y{ 2,3,6,8 };
-
-    plt::figure_size(200, 400);
-    plt::plot(x, y);
-
-    plt::show();
-    Py_Finalize();
-}
 
 void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram, 
                                             cv::Mat&x2d_wfr, cv::Mat&y2d_wfr, cv::Mat&sx2d_wfr, cv::Mat&sy2d_wfr, 
@@ -337,10 +387,6 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
                                             int    edge_exclusion,
                                             bool   is_show)
 {
-    infoText->appendPlainText("\n");
-    infoText->appendPlainText(u8"***************************");
-    infoText->appendPlainText(u8"开始计算 hartmanngram 的坡度 ");
-
 
     cv::Mat x2d_image_um(hartmanngram.size().height, hartmanngram.size().width, CV_32S);
     cv::Mat y2d_image_um(hartmanngram.size().height, hartmanngram.size().width, CV_32S);
@@ -361,7 +407,7 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
 
     cv::minMaxLoc(OutputArray, &mat_min_value, &mat_max_value, &min_location, &max_location);
     OutputArray = (OutputArray / mat_max_value) * (pow(2, 8) - 1);
-    HIOlAB_CXX_14::floor<double>(OutputArray);;
+    HIOlAB_CXX_14::floor<double>(OutputArray);
     OutputArray.convertTo(OutputArray, CV_8U);
 
     cv::GaussianBlur(OutputArray, OutputArray, cv::Size(5, 5), 0);
@@ -384,13 +430,8 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
 
     cv::Mat labels, stats, centroids;
     int num_of_rois = cv::connectedComponentsWithStats(OutputArray, labels, stats, centroids);
-    infoText->appendPlainText(QString(u8"连通域的数量") + QString::number(num_of_rois));
-    infoText->appendPlainText(QString("label shape height width ") + QString::number(labels.size().height) + QString(" ") + QString::number(labels.size().width));
-    infoText->appendPlainText(QString("stats shape height width ") + QString::number(stats.size().height) + QString(" ") + QString::number(stats.size().width));
-    infoText->appendPlainText(QString("centroids shape height width ") + QString::number(centroids.size().height) + QString(" ") + QString::number(centroids.size().width));
     cv::Mat area = stats.col(cv::CC_STAT_AREA);
     cv::transpose(area, area);
-    infoText->appendPlainText(QString("area shape height width ") + QString::number(area.size().height) + QString(" ") + QString::number(area.size().width));
     int num_of_valid_rois = cv::countNonZero(area >= area_thr) - 1;
     cv::Mat roi_idx_of_valid_rois = cv::Mat::zeros(1, num_of_valid_rois, area.type());
     num_of_valid_rois = 0;
@@ -410,7 +451,8 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
     }
 
 
-    infoText->appendPlainText(u8"Calculating the wrapped phase ");
+    infoText->appendPlainText(u8">>>    <----Ⅱ Calculating the wrapped phase----> ");
+    QApplication::processEvents();
     cv::Mat u_wrapped_phase(hartmanngram.rows, hartmanngram.cols, CV_64F);
     cv::Mat u_amplitude(hartmanngram.rows, hartmanngram.cols, CV_64F);
     cv::Mat v_wrapped_phase(hartmanngram.rows, hartmanngram.cols, CV_64F);
@@ -433,7 +475,6 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
     if (starting_pixel.empty()) {
 
         cv::Mat starting_pixel_copy(1, 2, CV_32S);
-        infoText->appendPlainText(QString(">>> starting_pixel is empty  ,create it "));
         double centroid_u = 0;
         double centroid_v = 0;
 
@@ -483,9 +524,10 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
     }
 
 
+    infoText->appendPlainText(u8">>>    <----Ⅲ 确定展开的相位和条纹阶数  相位角展开-->");
+    QCoreApplication::processEvents();
 
-    HIOlAB_CXX_14::MessagePrint(u8">>> 确定展开的相位和条纹阶数");
-    HIOlAB_CXX_14::MessagePrint(u8">>> 相位角展开");
+
     cv::Mat uwpu(u_wrapped_phase.rows, u_wrapped_phase.cols, u_wrapped_phase.type());
     cv::Mat uwpv(v_wrapped_phase.rows, v_wrapped_phase.cols, v_wrapped_phase.type());
 
@@ -498,7 +540,9 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
 
-    std::cout << ">>> QGPU2SC Function Runtime " << duration.count() << "\n";
+    infoText->appendPlainText(QString(u8">>>    <---- QGPU2SC Function Runtime %1 s----> ").arg(duration.count()));
+    QApplication::processEvents();
+
 
     cv::Mat fringe_orders_u = (uwpu-u_wrapped_phase) / (2 * M_PI);
     cv::Mat fringe_orders_v = (uwpv-v_wrapped_phase) / (2 * M_PI);
@@ -509,7 +553,9 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
 
   
     //! 4. check the finge orders in which the labelled regions belong to
-    HIOlAB_CXX_14::MessagePrint(">>> Checking fringe..... ");
+    
+    infoText->appendPlainText(u8">>>    <----Ⅳ Checking fringe.....----> ");
+    QApplication::processEvents();
     cv::Mat orders_of_labbed_rois = cv::Mat::zeros(num_of_valid_rois, 2, CV_32S); //! 存放的复数矩阵 
     cv::Mat mask = cv::Mat::zeros(fringe_orders_u.rows, fringe_orders_u.cols, CV_8U);
     int median = 0;
@@ -557,12 +603,12 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
 
     end = std::chrono::steady_clock::now();
     duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
-    std::cout << ">>> Loop Runtime " << duration.count() <<"S\n";
+    infoText->appendPlainText(QString(u8">>>    <---- Loop Runtime %1s----> ").arg(duration.count()));   
     HIOlAB_CXX_14::unique<int>(orders_of_labbed_rois,orders_of_labbed_rois);
 
-
     //! 5.calculate centroids and slopes 
-    HIOlAB_CXX_14::MessagePrint(">>> calculateing centroid and slopes... \n");
+    infoText->appendPlainText(u8">>>    <----Ⅴ calculateing centroid and slopes...----> \n");
+    QApplication::processEvents();
     int example_order_u = 2;
     int example_order_v = 3;
 
@@ -689,16 +735,17 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
             //! 5.2.3 Show one of the sub_images 遍历复数矩阵 如果实部和给定的实部 虚部和给定的虚部相等 将结果展示出来
             if (order_u == example_order_u && order_v == example_order_v) {
                 if (is_show) {
-                    std::cout << ">>> find u,v " << order_u << " " << order_v << std::endl;
-                    std::map<std::string,std::string> keywords = { { "interpolation", "nearest" }, { "cmap", "hot" } };
-                    sub_image.convertTo(sub_image, CV_32F);
-                    int num = sub_image.rows * sub_image.cols;
+                    infoText->appendPlainText(QString(">>>    <---- find u,v=%1,%2 ---> ").arg(order_u).arg(order_v));
+                    QApplication::processEvents();
+                    //std::map<std::string,std::string> keywords = { { "interpolation", "nearest" }, { "cmap", "hot" } };
+                    //sub_image.convertTo(sub_image, CV_32F);
+                    //int num = sub_image.rows * sub_image.cols;
 
-                    float* image= new float[num]();
-                    for (int i = 0; i < num; i++) {
+                    //float* image= new float[num]();
+                    //for (int i = 0; i < num; i++) {
 
-                        image[i] = sub_image.at<float>(i);
-                    }
+                    //    image[i] = sub_image.at<float>(i);
+                    //}
                     
                     //std::thread syncThreadFirst(PYTHON_SUB_IMAGE_SHOW,std::move(image),sub_image.rows,sub_image.cols,order_u,order_v,centroid.first,centroid.second);
                     //syncThreadFirst.detach();
@@ -718,8 +765,7 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
 
     end = std::chrono::steady_clock::now();
     duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
-    std::cout << ">>> Loop X1  RunTime " << duration.count() << " s\n";
-
+    infoText->appendPlainText(QString(u8">>>    <---- Loop X1 Runtime %1s----> ").arg(duration.count()));
 
     //! 6. 将质心和斜率取集合
     //! 6.1 如果序列不是由用户提供的 ，会自动计算生成一个orders，在这种情况下，我们认为边缘处的波前收到衍射的影响，因此这些边缘处的序列将被去除
@@ -799,9 +845,8 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
 
     end = std::chrono::steady_clock::now();
     duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
-    std::cout << ">>> Loop X2 RunTime " << duration.count() << " s\n";
-
-
+    infoText->appendPlainText(QString(u8">>>    <----Ⅵ Loop X2 Runtime %1s----> ").arg(duration.count()));
+    QApplication::processEvents();
 
     //! 7.定义x和y坐标以及x-y-z坐标中的斜率
 
@@ -824,10 +869,6 @@ void WaveFrontSensor::analyzeHartmanngram(  cv::Mat& hartmanngram,
     cv::Mat sy2d_wfr_urad = sy2d_wfr * 1e6;
 
 
-    if (is_show) {
-
-
-    }
 
 
 
@@ -900,7 +941,7 @@ void WaveFrontSensor::analyzeHartmannSlopes(cv::Mat& x2d, cv::Mat& y2d, cv::Mat&
    
     switch (str_model){
         case ModalMethodCalculateModel::Legendre:
-            std::cout << "Using legendre  recontruction " << std::endl;
+            infoText->appendPlainText(QString(u8">>>    <---- Using legendre  recontruction,waitting... ----> "));
             Legendre::intergrate(sx2d, sy2d, x2d, y2d, jld,z2d_wfr,zx,zy,wfr_coefs,zxm3d,zym3d,xn2d,yn2d,xy_norm);
             break;
         case ModalMethodCalculateModel::Zernike:
@@ -997,10 +1038,130 @@ void WaveFrontSensor::analyzeHartmannSlopes(cv::Mat& x2d, cv::Mat& y2d, cv::Mat&
      HIOlAB_CXX_14::getMaskedMatrix<double>(z2d_res, mask_sx, nan_double_value);
      OMDA_Algorithm::remove2DTilt(x2d, y2d, z2d_res, z2d_res);
      cv::Mat abr_wl = z2d_res / wave_length;
+
      HIOlAB_CXX_14::getMaskedMatrix<double>(abr_models, mask_sx, nan_double_value);
      cv::Mat abr_models_wl = abr_models / wave_length;
 
-     calculateAberrationRMSInWavelength(z2d_res, wave_length);
+     std::tuple<double, double, double>   abr_tuple_res = calculateAberrationRMSInWavelength(z2d_res, wave_length);
+     std::tuple<double, double, double>   abr_model_tuple_res = calculateAberrationRMSInWavelength(abr_models, wave_length);
+
+     if (is_show) {
+
+         try
+         { //! 1
+             std::map<std::string, std::string> keywords({ { "interpolation","nearest" } });
+
+             cv::Mat wfr_wl_flatten = wfr_wl.reshape(1, wfr_wl.rows * wfr_wl.cols).t();
+             wfr_wl_flatten.convertTo(wfr_wl_flatten, CV_32F);
+             float* data = wfr_wl_flatten.ptr<float>();
+             plt::figure_size(400, 400);
+             plt::imshow(data, wfr_wl.rows, wfr_wl.cols, 1, keywords);
+             plt::axis("equal");
+             std::string title = "Wavefront with " + str_method.toStdString() + " method";
+             plt::title(title);
+             plt::xlabel(u8"x[μm]");
+             plt::ylabel(u8"y[μm]");
+             wfr_wl.release();
+             wfr_wl_flatten.release();
+
+
+             //! 2
+             plt::figure_size(400, 400);
+             std::map<std::string, std::string> bar_keys{ {"label","Wavefront"} };
+             std::string title2;
+
+             if (str_model == ModalMethodCalculateModel::Legendre) {
+
+                 title2 = "Wavefront coefficients \n with  Legendre models";
+
+             }
+
+             else if (str_model == ModalMethodCalculateModel::Zernike) {
+
+                 title2 = "Wavefront coefficients \n with  Zernike models";
+             }
+
+             plt::title(title2);
+             wfr_coefs_wl.convertTo(wfr_coefs_wl, CV_32F);
+
+             std::vector<float> data2 = wfr_coefs_wl.reshape(0, 1);
+             plt::xlabel(u8"Terms");
+             plt::ylabel(u8"Coefficients [λ]");
+             plt::bar(data2, "blue", "-", 0.4, bar_keys);
+             wfr_coefs_wl.release();
+             data2.clear();
+
+
+             //! 3
+             plt::figure_size(400, 400);
+             std::map<std::string, std::string> abr_wl_keys({ { "interpolation","nearest" } });
+             cv::Mat flatten = abr_wl.reshape(1, abr_wl.rows * abr_wl.cols).t();
+             flatten.convertTo(flatten, CV_32F);
+             float* data3 = flatten.ptr<float>();
+             plt::imshow(data3, abr_wl.rows, abr_wl.cols, 1, abr_wl_keys);
+             plt::axis("equal");
+             QString title3 = QString(u8"Abberation: RMS = %1λ =λ/%2").arg(std::get<0>(abr_tuple_res)).arg(std::get<1>(abr_tuple_res));
+             plt::title(title3.toStdString());
+             plt::xlabel(u8"x[μm]");
+             plt::ylabel(u8"y[μm]");
+             abr_wl.release();
+             flatten.release();
+
+
+
+             //! 4
+             plt::figure_size(400, 400);
+             std::map<std::string, std::string> abr_wl_models_keys({ { "interpolation","nearest" } });
+             flatten = abr_models_wl.reshape(1, abr_models_wl.rows * abr_models_wl.cols).t();
+             flatten.convertTo(flatten, CV_32F);
+             float* data4 = flatten.ptr<float>();
+             plt::imshow(data4, abr_models_wl.rows, abr_models_wl.cols, 1, abr_wl_models_keys);
+             plt::axis("equal");
+             QString title4 = QString(u8"Abberation represented by models \n RMS = %1λ =λ/%2").arg(std::get<0>(abr_model_tuple_res)).arg(std::get<1>(abr_model_tuple_res));
+             plt::title(title4.toStdString());
+             plt::xlabel(u8"x[μm]");
+             plt::ylabel(u8"y[μm]");
+             abr_models_wl.release();
+             flatten.release();
+
+
+
+             //! 5
+             plt::figure_size(400, 400);
+             std::map<std::string, std::string> abr_coefs_wl_bar_keys{ {"label","Aberration"} };
+             std::string title5;
+
+             if (str_model == ModalMethodCalculateModel::Legendre) {
+
+                 title5 = "Aberration coefficients \n with  Legendre models";
+
+             }
+             else if (str_model == ModalMethodCalculateModel::Zernike) {
+
+                 title5 = " coefficients \n with  Zernike models";
+             }
+
+             plt::title(title5);
+             abr_coefs_wl.convertTo(abr_coefs_wl, CV_32F);
+
+             data2 = abr_coefs_wl.reshape(0, 1);
+             plt::xlabel(u8"Terms");
+             plt::ylabel(u8"Coefficients [λ]");
+             plt::bar(data2, "blue", "-", 0.4, abr_coefs_wl_bar_keys);
+             abr_coefs_wl.release();
+             data2.clear();
+
+             plt::show();
+
+         }
+         catch (const PlotException& plotException)
+         {
+             infoText->appendPlainText(plotException.what());
+             QApplication::processEvents();
+         }
+        
+     }
+
 
 }
 
@@ -1088,16 +1249,39 @@ std::tuple<double,double,double> WaveFrontSensor::calculateAberrationRMSInWavele
     
     cv::Mat abr_wl = abr / wavelength;
     cv::Mat mask = cv::Mat::zeros(abr_wl.rows, abr_wl.cols, CV_8U);
-    HIOlAB_CXX_14::isnan<double>(abr_wl, mask);
-    HIOlAB_CXX_14::getMaskedMatrix<double>(abr_wl, mask, 0);
+
+    try{
+       
+        HIOlAB_CXX_14::isnan<double>(abr_wl, mask);
+        HIOlAB_CXX_14::getMaskedMatrix<double>(abr_wl, mask, 0);
+    }
+    catch (const VectorNullException& matrixNullException){
+
+        HIOlAB_CXX_14::MessagePrint(matrixNullException.what());
+    }
+
+    catch (const ShapeException& shapeException) {
+
+        HIOlAB_CXX_14::MessagePrint(shapeException.what());
+    }
+
     cv::Scalar mean, std_dev;
     cv::meanStdDev(abr_wl, mean, std_dev);
     double denominator = 1.0 / std_dev.val[0];
-    printf("Aberration = λ/ %.1lf\n",denominator);
+  //  printf("Aberration = λ/ %.1lf\n",denominator);
     double strehl_ratio = std::exp(-(std::pow(2 * M_PI * std_dev.val[0], 2)));
-    printf("Strehl ratio (Mahajan\'s approximation) = %.4lf\n", strehl_ratio);
+  //  printf("Strehl ratio (Mahajan\'s approximation) = %.4lf\n", strehl_ratio);
 
+    infoText->appendPlainText(u8"\n>>>    <----程序执行结束---->");
+    infoText->appendPlainText(u8">>>    **********************************************\n  ");
+    infoText->appendPlainText(QString(u8"   Aberration = λ / %1").arg(denominator));
+    infoText->appendPlainText(QString(u8"   Strehl ratio (Mahajan\'s approximation) = %1").arg(strehl_ratio));
+    QCoreApplication::processEvents();
+    infoText->appendPlainText(u8"\n>>>    *********************************************  ");
+    QCoreApplication::processEvents();
     return std::make_tuple(std_dev.val[0],denominator,strehl_ratio);
+
+
 }
 
 
@@ -1385,9 +1569,6 @@ void WaveFrontSensor::processHartmanngram(Configuration& configuration, cv::Mat&
 
 
     //! 目前所有的数据的都没有问题 开始进行最后的多项式拟合重建操作
-    
-    std::cout << u8">>> Start reconstructing....\n";
-
     //! 3.分析图像的形状
     cv::Mat wfr, abr, coefs_wfr_wl, coefs_abr_wl;
     analyzeHartmannSlopes(x2d, y2d, sx2d, sy2d, wavelength, wfr, abr, coefs_wfr_wl, coefs_abr_wl);
@@ -1395,9 +1576,6 @@ void WaveFrontSensor::processHartmanngram(Configuration& configuration, cv::Mat&
 
 
 }
-
-
-
 
 
 
@@ -1429,6 +1607,11 @@ void WaveFrontSensor::free() {
     if (graphic_view != nullptr) {
 
         delete graphic_view;
+    }
+
+    if (configutration_widget != nullptr) {
+
+        delete configutration_widget;
     }
 
 }
