@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-/**
- *这是一个仿制软件所有的代码参考 https://github.com/huanglei0114/hartmann-analyzer.
- */
 #include    <QtWidgets/QWidget>
 #include    "ui_WaveFrontSensor.h"
 #include    <opencv.hpp>
